@@ -1,0 +1,1949 @@
+<!-- Calculateur Où vont vos impôts ? — MoneyRadar -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ===================================================
+   V5 — "Final" v2 (flush)
+   - Seuls le hero result et le détail ligne-par-ligne ont un fond
+   - Tout le reste vit directement sur le fond noir de la page
+   - Séparation par hairlines / espacements / accents typographiques
+   - Variété des traitements pour casser la répétition
+   - Container queries (≥720px desktop / <720px compact)
+   =================================================== */
+
+.v5 {
+  container-type: inline-size;
+  --teal: #00F5C0;
+  --orange: #FF9F43;
+  --red: #FF3B4E;
+  --purple: #A855F7;
+  --blue: #1060C4;
+  --violet: #8B5CF6;
+  --gold: #FFD700;
+
+  /* DARK */
+  --bg: #0A0E18;
+  --bg-2: #131A2F;
+  --bg-3: #1A2440;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-faint: rgba(255, 255, 255, 0.04);
+
+  --fg: #FFFFFF;
+  --fg-2: #ECF0F8;
+  --fg-3: #B8C5DC;
+  --fg-4: #8C9AB5;
+  --accent: var(--teal);
+
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg-2);
+  line-height: 1.5;
+}
+.v5[data-theme="light"] {
+  --bg: #FAFAF7;
+  --bg-2: #FFFFFF;
+  --bg-3: #F2F3EE;
+  --border: #E2E4DC;
+  --border-soft: #ECEEE7;
+  --border-faint: #F2F3EE;
+
+  --fg: #0A0E18;
+  --fg-2: #1A1F2E;
+  --fg-3: #3A4154;
+  --fg-4: #6B7588;
+  --accent: #008C64;
+  --teal: #008C64;
+}
+
+.v5, .v5 * { box-sizing: border-box; }
+.v5 .mric-anim { opacity: 1; }
+.v5 .inn { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.v5 .inn-wide { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+/* ========== HERO TOP ========== */
+.v5 .mric-hero {
+  background: var(--bg);
+  padding: 64px 24px 48px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-soft);
+  position: relative;
+}
+.v5 .mric-hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 245, 192, 0.10), transparent 65%);
+  pointer-events: none;
+}
+.v5[data-theme="light"] .mric-hero::before {
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 168, 120, 0.06), transparent 65%);
+}
+.v5 .mric-hero > * { position: relative; z-index: 1; }
+.v5 .mric-hero .inn { padding: 0; }
+.v5 .mric-hero-logo {
+  height: 28px; width: auto; margin: 0 auto 28px;
+  display: block; opacity: 0.95;
+  justify-self: center;
+}
+.v5[data-theme="light"] .mric-hero-logo { filter: invert(1) brightness(0.3); }
+.v5 .mric-hero h1 {
+  font-size: clamp(32px, 4.8vw, 56px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--fg);
+  max-width: 820px;
+  margin: 0 auto 18px;
+}
+.v5 .mric-hero h1 em { font-style: normal; color: var(--accent); }
+.v5 .mric-hero-sub {
+  font-size: clamp(15px, 1.5vw, 17px);
+  color: var(--fg-3);
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+.v5 .mric-hero-sub strong { color: var(--fg-2); font-weight: 600; }
+
+/* ========== TOOL SECTION ========== */
+.v5 .mric-tool-section {
+  background: var(--bg);
+  padding: 48px 0 80px;
+}
+.v5 .mric-tool-section::before { display: none; }
+.v5 .mric-tool-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@container (min-width: 900px) {
+  .v5 .mric-tool-grid {
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+}
+.v5 .mric-results-col { display: contents; }
+
+/* Placement desktop : form sidebar + hero result en row 1, le reste pleine largeur */
+@container (min-width: 900px) {
+  .v5 .mric-form-col { grid-column: 1; grid-row: 1; position: sticky; top: 24px; }
+  .v5 .mric-results { display: contents; }
+  .v5 .mric-results > .mric-result-block { grid-column: 2; grid-row: 1; }
+  .v5 .mric-results > *:not(.mric-result-block) { grid-column: 1 / -1; }
+}
+
+/* ========== FORMULAIRE — style E "Charbon" (sélection user) ========== */
+.v5 .mric-form-col {
+  background: #050810;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 24px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.v5 .mric-form-col::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+}
+.v5[data-theme="light"] .mric-form-col {
+  background: var(--bg-2);
+  border-color: var(--border);
+}
+.v5 .mric-form-col .lbl {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.v5[data-theme="light"] .mric-form-col .lbl {
+  border-bottom-color: var(--border-soft);
+}
+.v5 .mric-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 20px;
+}
+.v5 .mric-form-sep-label {
+  display: none;
+}
+.v5 .mric-field label {
+  display: block;
+  font-size: 11px; font-weight: 700;
+  color: var(--fg-3);
+  margin-bottom: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.v5 .mric-input-wrap { position: relative; }
+.v5 .mric-input-wrap input,
+.v5 .mric-input-wrap select {
+  width: 100%;
+  padding: 13px 42px 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  background: #0A0E18;
+  color: var(--fg);
+  font-size: 16px; font-weight: 600;
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+.v5[data-theme="light"] .mric-input-wrap input,
+.v5[data-theme="light"] .mric-input-wrap select {
+  background: #fff;
+  border-color: var(--border);
+}
+.v5 .mric-input-wrap input::-webkit-outer-spin-button,
+.v5 .mric-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.v5 .mric-input-wrap input:focus, .v5 .mric-input-wrap select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 245, 192, 0.15);
+}
+.v5 .mric-input-wrap select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 36px; }
+.v5 .mric-input-suffix {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--fg-4); font-weight: 600; font-size: 13px;
+  pointer-events: none;
+}
+.v5 .mric-field-hint {
+  font-size: 11.5px; color: var(--fg-4);
+  margin-top: 6px; line-height: 1.5;
+}
+.v5 .mric-field-hint strong { color: var(--fg-3); font-weight: 600; }
+
+.v5 .mric-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%;
+  padding: 15px 20px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 10px;
+  font-size: 14.5px; font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  transition: all 0.18s ease;
+}
+.v5[data-theme="light"] .mric-btn { color: #fff; }
+.v5 .mric-btn:hover { background: #00d6a8; transform: translateY(-1px); }
+.v5[data-theme="light"] .mric-btn:hover { background: #006b4e; }
+.v5 .mric-btn::before { display: none; }
+
+/* ========== RÉSULTATS — DISPLAY CONTENTS ========== */
+.v5 .mric-results { display: none; }
+.v5 .mric-results.mric-visible { display: contents; }
+
+/* ========== HERO RESULT (sans card — flush sur le fond, centré) ========== */
+.v5 .mric-result-block {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  overflow: visible;
+  position: relative;
+  text-align: center;
+}
+.v5 .mric-result-block::before {
+  content: ""; position: absolute; top: -2px; left: 30%; right: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+}
+.v5 .mric-headline-card {
+  padding: 32px 0 26px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .mric-headline-card::before {
+  content: "VOUS REVERSEZ CHAQUE ANNÉE";
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--fg-4);
+  margin-bottom: 14px;
+}
+.v5 .mric-headline-num {
+  font-size: clamp(44px, 6vw, 68px);
+  font-weight: 800;
+  color: var(--orange);
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 0 32px rgba(255, 159, 67, 0.22));
+}
+.v5 .mric-headline-sub {
+  font-size: 14px;
+  color: var(--fg-3);
+  line-height: 1.55;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.v5 .mric-headline-sub strong { color: var(--fg-2); font-weight: 600; }
+
+/* 4 stats sur 4 col en compact, 2x2 en grand format quand desktop */
+.v5 .mric-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+@container (min-width: 720px) {
+  .v5 .mric-stats-row.mric-4 { grid-template-columns: 1fr 1fr; }
+}
+.v5 .mric-stat {
+  padding: 16px 18px;
+  text-align: center;
+  border-right: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
+}
+.v5 .mric-stats-row.mric-4 .mric-stat:nth-child(2n) { border-right: none; }
+.v5 .mric-stats-row.mric-4 .mric-stat:nth-last-child(-n+2) { border-bottom: none; }
+
+/* Desktop : 2x2 avec plus de respiration + grands chiffres */
+@container (min-width: 720px) {
+  .v5 .mric-stat {
+    padding: 28px 24px;
+  }
+}
+.v5 .mric-stat-num {
+  font-size: 20px; font-weight: 800; color: var(--fg);
+  line-height: 1.05; margin-bottom: 5px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.v5 .mric-stat-num.mric-orange { color: var(--orange); }
+.v5 .mric-stat-num.mric-white { color: var(--fg); }
+.v5 .mric-stat-lbl {
+  font-size: 10px; font-weight: 700; color: var(--fg-4);
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+
+/* Desktop : chiffres beaucoup plus gros pour occuper l'espace */
+@container (min-width: 720px) {
+  .v5 .mric-stat-num { font-size: 36px; margin-bottom: 10px; letter-spacing: -0.03em; }
+  .v5 .mric-stat-lbl { font-size: 11px; letter-spacing: 0.16em; }
+}
+
+/* TFD : on supprime le titre uppercase et le calendrier visuel.
+   On garde uniquement la phrase "Vous travaillez pour l'État jusqu'au X avril" + sa description. */
+.v5 .mric-tfd {
+  padding: 24px 0 8px;
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
+  text-align: center;
+}
+.v5 .mric-tfd-title { display: none; }
+.v5 .mric-tfd-date {
+  font-size: clamp(17px, 1.9vw, 22px);
+  font-weight: 800; color: var(--fg);
+  line-height: 1.2; letter-spacing: -0.015em;
+  margin-bottom: 10px;
+}
+.v5 .mric-tfd-date span { color: var(--orange); }
+.v5 .mric-tfd-desc { font-size: 13px; color: var(--fg-3); line-height: 1.55; max-width: 480px; margin: 0 auto; }
+.v5 .mric-tfd-desc strong { color: var(--fg-2); font-weight: 600; }
+/* Barre de progression + calendrier 12 mois : retirés */
+.v5 .mric-tfd-year { display: none; }
+.v5 .mric-tfd-legend { display: none; }
+
+/* ========== SÉPARATEUR DE SECTION (typo en gros titre) ========== */
+.v5 .mric-sep {
+  margin: 16px 0 0;
+  padding: 36px 0 0;
+  display: block;
+  text-align: left;
+  position: relative;
+}
+.v5 .mric-sep::before, .v5 .mric-sep::after { display: none; }
+.v5 .mric-sep span {
+  display: block;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  text-transform: none;
+  position: relative;
+  padding-bottom: 12px;
+}
+.v5 .mric-sep span::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 40px; height: 2px;
+  background: var(--accent);
+}
+
+/* ========== BREAKDOWN 3 COLS — FLUSH (pas de bg, juste structure) ========== */
+.v5 .mric-breakdown {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 28px 0 32px;
+}
+@container (min-width: 720px) {
+  .v5 .mric-breakdown { grid-template-columns: 1fr 1fr 1fr; }
+}
+.v5 .mric-breakdown-item {
+  padding: 22px 24px 22px 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 6px;
+  align-items: start;
+  position: relative;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .mric-breakdown-item:last-child { border-bottom: none; padding-right: 0; }
+@container (min-width: 720px) {
+  .v5 .mric-breakdown-item {
+    border-bottom: none;
+    border-right: 1px solid var(--border-soft);
+    padding: 0 28px 0 0;
+  }
+  .v5 .mric-breakdown-item:first-child { padding-left: 0; }
+  .v5 .mric-breakdown-item:not(:first-child) { padding-left: 28px; }
+  .v5 .mric-breakdown-item:last-child { border-right: none; padding-right: 0; }
+}
+/* On masque les labels IR/CS/TVA (colorés) — inutiles, redondants avec le titre */
+.v5 .mric-breakdown-icon { display: none; }
+.v5 .mric-breakdown-body strong {
+  display: block;
+  font-size: 18px; font-weight: 800;
+  color: var(--fg);
+  margin: 0 0 8px;
+  letter-spacing: -0.015em;
+}
+.v5 .mric-breakdown-body span {
+  font-size: 13px; color: var(--fg-3);
+  line-height: 1.6;
+}
+.v5 .mric-breakdown-amount {
+  font-size: 32px; font-weight: 800;
+  color: var(--teal);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+.v5 .mric-breakdown-item:nth-child(2) .mric-breakdown-amount { color: var(--orange); }
+.v5 .mric-breakdown-item:nth-child(3) .mric-breakdown-amount { color: var(--purple); }
+
+/* ========== ROW 2 : patro + Europe — FLUSH ========== */
+.v5 .mric-row-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 36px;
+  padding: 12px 0 32px;
+  border-top: 1px solid var(--border-soft);
+}
+@container (min-width: 900px) {
+  .v5 .mric-row-2 {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+    gap: 56px;
+    padding-top: 32px;
+  }
+}
+
+/* Patro callout — flush avec accent rouge */
+.v5 .mric-patrocallout {
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--red);
+  border-radius: 0;
+  padding: 4px 0 4px 18px;
+  font-size: 13.5px;
+  color: var(--fg-3);
+  line-height: 1.65;
+  display: block;
+  position: relative;
+}
+.v5 .mric-patrocallout::before { display: none; }
+.v5 .mric-patrocallout > div:first-child { display: none; } /* hide the "!" circle icon */
+.v5 .mric-patrocallout strong {
+  display: block;
+  color: var(--fg);
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.v5 .mric-patrocallout em {
+  color: var(--orange);
+  font-style: normal;
+  font-weight: 700;
+}
+.v5 .mric-patroicon { display: none; }
+
+/* Europe — flush, no card, juste titre et bars */
+.v5 .mric-europe {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.v5 .mric-europe-title {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4);
+  margin-bottom: 16px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.v5 .mric-europe-bars { display: grid; gap: 9px; }
+.v5 .mric-europe-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 50px;
+  gap: 14px;
+  align-items: center;
+  font-size: 12.5px;
+}
+.v5 .mric-europe-flag { color: var(--fg-2); font-weight: 500; }
+.v5 .mric-europe-flag.mric-you { color: var(--accent); font-weight: 800; }
+.v5 .mric-europe-bar {
+  height: 7px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.v5 .mric-europe-fill {
+  height: 100%;
+  background: var(--fg-4);
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.v5 .mric-europe-row.mric-you-row .mric-europe-fill {
+  background: linear-gradient(90deg, var(--teal), #00B8A0);
+}
+.v5 .mric-europe-val {
+  font-size: 12.5px; font-weight: 700; color: var(--fg-2);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.v5 .mric-europe-row.mric-you-row .mric-europe-val { color: var(--accent); }
+.v5 .mric-europe p { font-size: 11.5px !important; color: var(--fg-4) !important; margin-top: 16px !important; line-height: 1.55 !important; }
+
+/* ========== DONUT + SHOCKS — FLUSH ========== */
+.v5 .mric-donut-shocks-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 36px;
+  padding: 12px 0 32px;
+  border-top: 1px solid var(--border-soft);
+}
+@container (min-width: 900px) {
+  .v5 .mric-donut-shocks-row {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    gap: 56px;
+    padding-top: 32px;
+  }
+}
+
+.v5 .mric-donut-section {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.v5 .mric-donut-title {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4);
+  margin-bottom: 18px;
+}
+.v5 .mric-donut-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: center;
+}
+@container (min-width: 540px) { .v5 .mric-donut-wrap { grid-template-columns: 200px 1fr; } }
+.v5 .mric-donut-svg { display: block; margin: 0 auto; max-width: 200px; width: 100%; }
+.v5 .mric-donut-center .mric-dc-num {
+  font-size: 19px; font-weight: 800; fill: var(--fg);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.v5 .mric-donut-center .mric-dc-lbl {
+  font-size: 9px; font-weight: 700; fill: var(--fg-4);
+  letter-spacing: 0.14em; text-transform: uppercase;
+}
+.v5 .mric-donut-legend { display: grid; grid-template-columns: 1fr; gap: 0; }
+.v5 .mric-donut-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-faint);
+  font-size: 12px;
+}
+.v5 .mric-donut-item:last-child { border-bottom: none; }
+.v5 .mric-donut-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.v5 .mric-donut-name {
+  color: var(--fg-2); font-weight: 500;
+  font-size: 12.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.v5 .mric-donut-val {
+  color: var(--fg-2); font-weight: 700;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.v5 .mric-donut-pct { display: none; }
+.v5 .mric-donut-section p { font-size: 11.5px !important; color: var(--fg-4) !important; margin-top: 16px !important; line-height: 1.55 !important; }
+
+/* SHOCKS — flush, gros textes pull-quote */
+.v5 .mric-shocks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+.v5 .mric-shock {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 0 16px;
+  position: relative;
+  border-left: 2px solid var(--purple);
+  border-bottom: none;
+}
+.v5 .mric-shock:nth-child(2) { border-left-color: var(--accent); }
+.v5 .mric-shock:nth-child(3) { border-left-color: var(--gold); }
+.v5 .mric-shock::before { display: none; }
+.v5 .mric-shock-lbl {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 6px;
+  font-family: ui-monospace, "SF Mono", monospace;
+}
+.v5 .mric-shock:nth-child(2) .mric-shock-lbl { color: var(--accent); }
+.v5 .mric-shock:nth-child(3) .mric-shock-lbl { color: var(--gold); }
+.v5 .mric-shock-txt {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+  font-weight: 500;
+}
+.v5 .mric-shock-txt strong {
+  color: var(--accent);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== TABLEAU DÉTAIL — flush, plus de card ========== */
+.v5 .mric-detail {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 16px;
+}
+.v5 .mric-detail-title {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.v5 .mric-detail-sub {
+  font-size: 12.5px; color: var(--fg-4);
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-soft);
+  line-height: 1.5;
+}
+.v5 .mric-detail-list {
+  display: grid; grid-template-columns: 1fr; gap: 0;
+}
+@container (min-width: 780px) {
+  .v5 .mric-detail-list { grid-template-columns: 1fr 1fr; column-gap: 40px; }
+}
+.v5 .mric-detail-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 8px 16px;
+  padding: 12px 0 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .mric-detail-row:last-child { border-bottom: none; }
+.v5 .mric-detail-name {
+  font-size: 13px; color: var(--fg-2);
+  font-weight: 600; min-width: 0;
+  grid-column: 1; grid-row: 1;
+}
+.v5 .mric-detail-name small {
+  display: block;
+  font-size: 11px; color: var(--fg-4);
+  margin-top: 3px; font-weight: 400;
+  line-height: 1.4;
+}
+.v5 .mric-detail-val {
+  font-size: 14px; font-weight: 800; color: var(--fg);
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+  grid-column: 2; grid-row: 1;
+}
+.v5 .mric-detail-val.mric-tiny { color: var(--orange); font-size: 13px; }
+.v5 .mric-detail-bar {
+  grid-column: 1 / -1; grid-row: 2;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+}
+.v5[data-theme="light"] .mric-detail-bar { background: rgba(0, 0, 0, 0.05); }
+.v5 .mric-detail-bar span {
+  display: block;
+  height: 100%;
+  width: var(--pct, 0%);
+  background: var(--bar-color, var(--teal));
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--bar-color, var(--teal)) 30%, transparent);
+}
+
+/* ========== SUMMARY — flush, just left border accent ========== */
+.v5 .qblock {
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  padding: 6px 0 6px 20px;
+  margin-top: 32px;
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.75;
+}
+.v5 .qblock strong { color: var(--fg); font-weight: 700; }
+
+/* ========== SHARE — flush ========== */
+.v5 .mric-share {
+  padding: 24px 0 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-soft);
+}
+.v5 .mric-share-lbl {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4);
+  margin-bottom: 14px;
+}
+.v5 .mric-share-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.v5 .mric-share-btn {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--fg-3);
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.v5 .mric-share-btn:hover { border-color: var(--accent); color: var(--accent); }
+.v5 .mric-share-btn svg { width: 16px; height: 16px; fill: currentColor; }
+.v5 .mric-share-btn--copy {
+  width: auto; padding: 0 14px; gap: 8px; font-size: 12px; font-weight: 700;
+}
+.v5 .mric-share-btn--copy svg { width: 14px; height: 14px; }
+.v5 .mric-share-toast {
+  position: absolute; bottom: -26px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  white-space: nowrap; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.v5 .mric-share-toast.mric-show { opacity: 1; }
+.v5 .mric-share-native { display: none; }
+
+/* ========== LEAD MAGNET — CTA, garde un treatment subtil (gradient bg) ========== */
+.v5 .mric-lm {
+  padding: 28px 30px;
+  margin-top: 32px;
+  background:
+    radial-gradient(ellipse 60% 100% at 100% 0%, rgba(0, 245, 192, 0.10), transparent 60%),
+    var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.v5[data-theme="light"] .mric-lm {
+  background:
+    radial-gradient(ellipse 60% 100% at 100% 0%, rgba(0, 168, 120, 0.08), transparent 60%),
+    var(--bg-2);
+}
+.v5 .mric-lm::before { display: none; }
+.v5 .mric-lm-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.v5 .mric-lm-icon { width: 44px; height: 44px; border-radius: 10px; overflow: hidden; }
+.v5 .mric-lm-icon img { width: 100%; height: 100%; object-fit: cover; }
+.v5 .mric-lm-title { font-size: 16px; font-weight: 800; color: var(--fg); line-height: 1.3; letter-spacing: -0.01em; }
+.v5 .mric-lm-title span { color: var(--accent); }
+.v5 .mric-lm-desc { font-size: 13.5px; color: var(--fg-3); line-height: 1.6; margin: 0 0 16px; }
+.v5 .mric-lm-desc strong { color: var(--fg-2); font-weight: 600; }
+.v5 .mric-lm-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.v5 .mric-lm-fine { font-size: 11px; color: var(--fg-4); margin: 12px 0 0; }
+
+/* ========== GUIDES — flush ========== */
+.v5 .mric-guides {
+  padding: 24px 0 0;
+  border-top: 1px solid var(--border-soft);
+  margin-top: 32px;
+}
+.v5 .mric-guides-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.v5 .mric-guides-logo { height: 16px; }
+.v5[data-theme="light"] .mric-guides-logo { filter: invert(1) brightness(0.3); }
+.v5 .mric-guides-title {
+  font-size: 11px; font-weight: 800; color: var(--fg-4);
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.v5 .mric-guides-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+@container (min-width: 720px) { .v5 .mric-guides-grid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0 24px; } }
+.v5 .mric-guide-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+@container (min-width: 720px) { .v5 .mric-guide-link { border-bottom: none; padding: 0; } }
+.v5 .mric-guide-icon { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+.v5 .mric-guide-txt { flex: 1; }
+.v5 .mric-guide-txt strong { display: block; font-size: 13px; color: var(--fg-2); font-weight: 700; }
+.v5 .mric-guide-txt span { font-size: 11px; color: var(--fg-4); }
+.v5 .mric-guide-chevron { color: var(--fg-4); flex-shrink: 0; }
+.v5 .mric-guide-link:hover .mric-guide-txt strong { color: var(--accent); }
+
+/* ========== OTHER CALC — flush ========== */
+.v5 .mric-othercalc {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 24px 0 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-soft);
+}
+.v5 .mric-othercalc::before { display: none; }
+.v5 .mric-othercalc-title {
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--fg-4); margin-bottom: 14px;
+}
+.v5 .mric-othercalc-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+@container (min-width: 640px) { .v5 .mric-othercalc-grid { grid-template-columns: 1fr 1fr 1fr; } }
+.v5 .mric-othercalc-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+@container (min-width: 640px) {
+  .v5 .mric-othercalc-item { padding: 8px 16px; border-bottom: none; border-right: 1px solid var(--border-soft); }
+  .v5 .mric-othercalc-item:nth-child(3n) { border-right: none; padding-right: 0; }
+  .v5 .mric-othercalc-item:nth-child(3n+1) { padding-left: 0; }
+}
+.v5 .mric-othercalc-name { font-size: 13px; color: var(--fg-2); font-weight: 700; line-height: 1.3; flex: 1; }
+.v5 .mric-othercalc-desc { font-size: 11px; color: var(--fg-4); display: none; }
+@container (min-width: 640px) { .v5 .mric-othercalc-desc { display: block; } }
+.v5 .mric-othercalc-item svg { width: 14px; height: 14px; color: var(--fg-4); flex-shrink: 0; }
+.v5 .mric-othercalc-item:hover .mric-othercalc-name { color: var(--accent); }
+
+/* ========== SECTIONS ÉDUCATIVES — flush également ========== */
+.v5 .dk { background: var(--bg); }
+.v5 .lt { background: var(--bg-3); border-top: 1px solid var(--border-soft); }
+.v5[data-theme="light"] .lt { background: var(--bg-2); }
+.v5 section .inn { padding-top: 64px; padding-bottom: 64px; }
+.v5 .stitle {
+  font-size: clamp(28px, 3.4vw, 42px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  margin-bottom: 20px;
+  max-width: 800px;
+}
+.v5 .btxt {
+  font-size: 15.5px;
+  color: var(--fg-3);
+  line-height: 1.7;
+  margin-bottom: 18px;
+  max-width: 740px;
+}
+.v5 .btxt strong { color: var(--fg-2); font-weight: 600; }
+
+/* Les 3 piliers — flush en 3 col avec dividers, sans card */
+.v5 .srow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin: 32px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+@container (min-width: 780px) { .v5 .srow { grid-template-columns: repeat(3, 1fr); } }
+.v5 .scard {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 28px 24px 28px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .scard:last-child { border-bottom: none; padding-right: 0; }
+@container (min-width: 780px) {
+  .v5 .scard {
+    border-bottom: none;
+    border-right: 1px solid var(--border-soft);
+    padding: 28px 28px 28px 0;
+  }
+  .v5 .scard:not(:first-child) { padding-left: 28px; }
+  .v5 .scard:last-child { border-right: none; padding-right: 0; }
+}
+.v5 .scard .num {
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  margin-bottom: 14px;
+  line-height: 1;
+}
+.v5 .scard .lbl2 { font-size: 14px; color: var(--fg-3); line-height: 1.6; }
+.v5 .scard .lbl2 strong { color: var(--fg-2); display: block; margin-bottom: 5px; font-weight: 700; }
+
+/* 3 leviers — flush avec gros num */
+.v5 .cgrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin: 28px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+@container (min-width: 780px) { .v5 .cgrid { grid-template-columns: repeat(3, 1fr); } }
+.v5 .card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 28px 24px 28px 0;
+  display: flex; gap: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .card:last-child { border-bottom: none; padding-right: 0; }
+@container (min-width: 780px) {
+  .v5 .card {
+    border-bottom: none;
+    border-right: 1px solid var(--border-soft);
+    padding: 28px 28px 28px 0;
+  }
+  .v5 .card:not(:first-child) { padding-left: 28px; }
+  .v5 .card:last-child { border-right: none; padding-right: 0; }
+}
+.v5 .cnum {
+  font-size: 36px; font-weight: 800;
+  color: var(--accent); line-height: 1;
+  flex-shrink: 0;
+  letter-spacing: -0.04em;
+}
+.v5 .card h3 { font-size: 17px; font-weight: 700; color: var(--fg); margin: 0 0 6px; letter-spacing: -0.005em; }
+.v5 .card p { font-size: 14px; color: var(--fg-3); line-height: 1.6; margin: 0; }
+
+/* Formula — flush avec left border */
+.v5 .mric-formula {
+  background: transparent;
+  border: none;
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  padding: 6px 0 6px 22px;
+  margin: 24px 0;
+}
+.v5 .mric-formula::before { display: none; }
+.v5 .mric-formula p { color: var(--fg); margin: 0 0 12px; line-height: 1.55; font-weight: 700; font-size: 16px; }
+.v5 .mric-formula ul { padding-left: 16px; margin: 8px 0 0; list-style: none; }
+.v5 .mric-formula li {
+  color: var(--fg-3);
+  margin-bottom: 8px;
+  font-size: 14.5px;
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.6;
+}
+.v5 .mric-formula li::before { content: "→"; position: absolute; left: 0; top: 0; color: var(--accent); }
+.v5 .mric-formula li strong { color: var(--fg-2); }
+
+/* ========== FAQ — flush ========== */
+.v5 .flist {
+  display: grid; gap: 0;
+  margin: 24px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border-soft);
+}
+.v5 .flist details {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.v5 .flist details[open] { background: transparent; }
+.v5 .flist summary {
+  padding: 18px 0;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--fg-2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+}
+.v5 .flist summary::-webkit-details-marker { display: none; }
+.v5 .flist summary::after {
+  content: "+";
+  font-size: 22px; font-weight: 300;
+  color: var(--accent); margin-left: 14px;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.v5 .flist details[open] summary::after { transform: rotate(45deg); }
+.v5 .flist .fans {
+  padding: 0 0 22px;
+  font-size: 14.5px;
+  color: var(--fg-3);
+  line-height: 1.75;
+}
+.v5 .flist .fans strong { color: var(--fg-2); font-weight: 600; }
+.v5 .flist .fans a { color: var(--accent); text-decoration: underline; }
+
+/* ========== MOBILE OVERRIDES (< 720px) ========== */
+@container (max-width: 720px) {
+  /* === FORMULAIRE FLUSH SUR MOBILE ===
+     Pas de card, pas de fond — utilise la pleine largeur sur le fond de la page */
+  .v5 .mric-form-col {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 18px 0 20px;
+  }
+  .v5 .mric-form-col::before { display: none; }
+  .v5 .mric-form-col .lbl {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: center;
+  }
+  .v5 .mric-sep {
+    text-align: center;
+  }
+  .v5 .mric-sep span::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .v5 .mric-input-wrap input,
+  .v5 .mric-input-wrap select {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .v5[data-theme="light"] .mric-input-wrap input,
+  .v5[data-theme="light"] .mric-input-wrap select { background: #fff; }
+  .v5 .mric-form-grid { gap: 12px; margin-bottom: 14px; }
+  .v5 .mric-field-hint { display: none; }
+
+  /* Hero result mobile — déjà flush et centré côté desktop, on n'override que les tailles */
+  .v5 .mric-result-block { margin-top: 24px; }
+  .v5 .mric-headline-card { padding: 24px 0 22px; }
+  .v5 .mric-headline-num { font-size: 52px; }
+  .v5 .mric-headline-sub { font-size: 13.5px; max-width: 320px; }
+  .v5 .mric-stat { padding: 14px 8px; }
+  .v5 .mric-stat-num { font-size: 19px; }
+  .v5 .mric-tfd { padding: 22px 0 8px; }
+  .v5 .mric-tfd-desc { max-width: 320px; }
+
+  /* === BREAKDOWN 3 ITEMS COMPACTS SUR MOBILE ===
+     Titre + montant inline (au lieu de tout empilé verticalement) */
+  .v5 .mric-breakdown { padding: 24px 0 28px; }
+  .v5 .mric-breakdown-item {
+    padding: 14px 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "icon title amount"
+      "desc desc desc";
+    column-gap: 12px;
+    row-gap: 6px;
+    align-items: baseline;
+  }
+  .v5 .mric-breakdown-icon {
+    grid-area: icon;
+    margin-bottom: 0;
+    align-self: center;
+    width: 32px;
+    text-align: left;
+  }
+  .v5 .mric-breakdown-body {
+    display: contents;
+  }
+  .v5 .mric-breakdown-body strong {
+    grid-area: title;
+    font-size: 14.5px;
+    margin: 0;
+  }
+  .v5 .mric-breakdown-body span {
+    grid-area: desc;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--fg-4);
+  }
+  .v5 .mric-breakdown-amount {
+    grid-area: amount;
+    font-size: 20px;
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+    align-self: center;
+    white-space: nowrap;
+  }
+
+  /* Détail flush sur mobile aussi */
+  .v5 .mric-detail { padding: 0; }
+  .v5 .mric-detail-row { padding: 9px 0 10px; }
+  .v5 .mric-detail-name { font-size: 12.5px; }
+  .v5 .mric-detail-name small { font-size: 10.5px; }
+  .v5 .mric-detail-val { font-size: 13px; }
+  .v5 .mric-detail-bar { margin-top: 6px; height: 3px; }
+
+  .v5 .mric-breakdown-item { padding: 18px 0; }
+  .v5 .mric-breakdown-body strong { font-size: 16px; }
+  .v5 .mric-breakdown-amount { font-size: 24px; padding-top: 10px; margin-top: 12px; }
+
+  .v5 .mric-sep span { font-size: 18px; }
+  .v5 section .inn { padding-top: 44px; padding-bottom: 44px; }
+  .v5 .stitle { font-size: 24px; margin-bottom: 14px; }
+  .v5 .btxt { font-size: 14px; }
+  .v5 .scard, .v5 .card { padding-left: 0 !important; padding-right: 0 !important; }
+}
+
+</style>
+
+<div class="mric-calc v5" data-share-url="https://moneyradar.org/simulateur-ou-vont-vos-impots/">
+
+  <!-- ===== HERO ===== -->
+  <section class="mric-hero">
+    <div class="inn">
+      <img src="https://moneyradar.org/lp4/wp-content/themes/astra-child/assets/images/moneyradar-logo.webp" alt="MoneyRadar" class="mric-hero-logo">
+      <h1>Où vont <em>vraiment vos impôts</em>&nbsp;?</h1>
+      <p class="mric-hero-sub">Saisissez votre salaire net mensuel. On calcule ce que vous reversez chaque année en <strong>IR + cotisations salariales + TVA</strong> et on vous dit <strong>où va chaque euro</strong>, ligne par ligne, du budget des retraites jusqu'au coût de l'Élysée. Données <strong>LFI 2026</strong> et INSEE.</p>
+    </div>
+  </section>
+
+  <!-- ===== OUTIL ===== -->
+  <section class="dk mric-tool-section">
+    <div class="inn-wide">
+      <div class="mric-tool-grid">
+
+        <!-- COL GAUCHE : Formulaire -->
+        <div class="mric-form-col">
+          <span class="lbl">Vos paramètres</span>
+          <div class="mric-form-grid">
+
+            <div class="mric-form-sep-label" style="margin-top:0">💼 Votre revenu</div>
+            <div class="mric-field">
+              <label for="mric-net">Salaire NET mensuel</label>
+              <div class="mric-input-wrap">
+                <input type="number" id="mric-net" value="2500" min="0" step="100" inputmode="numeric">
+                <span class="mric-input-suffix">€</span>
+              </div>
+              <div class="mric-field-hint">Votre <strong>net imposable</strong> mensuel (ligne du bulletin de paie, avant prélèvement à la source). Différent du "net à payer" sur votre compte.</div>
+            </div>
+            <div class="mric-field">
+              <label for="mric-statut">Statut</label>
+              <div class="mric-input-wrap">
+                <select id="mric-statut">
+                  <option value="salarie">Salarié</option>
+                  <option value="cadre">Cadre</option>
+                  <option value="indep">Indépendant / TNS</option>
+                  <option value="retraite">Retraité</option>
+                </select>
+              </div>
+              <div class="mric-field-hint">Détermine les taux de cotisations sociales applicables</div>
+            </div>
+
+            <div class="mric-form-sep-label">👨‍👩‍👧 Votre foyer</div>
+            <div class="mric-field">
+              <label for="mric-situation">Situation</label>
+              <div class="mric-input-wrap">
+                <select id="mric-situation">
+                  <option value="seul">Célibataire</option>
+                  <option value="couple">Marié / PACS</option>
+                  <option value="isole">Parent isolé</option>
+                </select>
+              </div>
+              <div class="mric-field-hint">Impact direct sur le nombre de parts fiscales</div>
+            </div>
+            <div class="mric-field">
+              <label for="mric-enfants">Enfants à charge</label>
+              <div class="mric-input-wrap">
+                <input type="number" id="mric-enfants" value="0" min="0" max="10" step="1" inputmode="numeric">
+                <span class="mric-input-suffix">enf.</span>
+              </div>
+              <div class="mric-field-hint">+0,5 part par enfant (1 et 2), +1 part au-delà</div>
+            </div>
+          </div>
+          <button class="mric-btn" id="mric-btn-calculer" type="button">
+            Découvrir où vont mes impôts
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+
+        <!-- COL DROITE : Résultats -->
+        <div class="mric-results-col">
+          <div class="mric-results" id="mric-results">
+
+            <!-- HERO unifié : Total + sub + 4 stats + TFD dans un seul flux -->
+            <div class="mric-result-block mric-anim">
+              <div class="mric-headline-card">
+                <div class="mric-headline-num" id="mric-total-num">… €</div>
+                <div class="mric-headline-sub" id="mric-total-sub">Voici ce que vous reversez à l'État et à la Sécu cette année.</div>
+              </div>
+              <div class="mric-stats-row mric-4">
+                <div class="mric-stat">
+                  <div class="mric-stat-num mric-orange" id="mric-jour">…</div>
+                  <div class="mric-stat-lbl">Par jour</div>
+                </div>
+                <div class="mric-stat">
+                  <div class="mric-stat-num mric-white" id="mric-mensuel">…</div>
+                  <div class="mric-stat-lbl">Coût mensuel</div>
+                </div>
+                <div class="mric-stat">
+                  <div class="mric-stat-num mric-white" id="mric-taux">…</div>
+                  <div class="mric-stat-lbl">Taux effectif</div>
+                </div>
+                <div class="mric-stat">
+                  <div class="mric-stat-num mric-orange" id="mric-rang">…</div>
+                  <div class="mric-stat-lbl">Sur 8h de travail</div>
+                </div>
+              </div>
+              <div class="mric-tfd">
+                <div class="mric-tfd-title">Le jour où vous commencez à travailler pour vous</div>
+                <div class="mric-tfd-date">Vous travaillez pour l'État jusqu'au <span id="mric-tfd-date">…</span></div>
+                <div class="mric-tfd-desc" id="mric-tfd-desc">…</div>
+                <div class="mric-tfd-year">
+                  <div class="mric-tfd-year-state" id="mric-tfd-bar" style="width:0%"></div>
+                </div>
+                <div class="mric-tfd-legend">
+                  <span>1er janvier</span>
+                  <span>État</span>
+                  <span style="color:var(--teal)">Vous</span>
+                  <span>31 décembre</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Séparateur / titre "Le détail" -->
+            <div class="mric-sep mric-anim">
+              <span>Le détail de vos prélèvements</span>
+            </div>
+
+            <!-- 3 cartes IR / CS / TVA -->
+            <div class="mric-breakdown mric-anim" id="mric-breakdown"></div>
+
+            <!-- Callout + Europe en 2 cols sur desktop -->
+            <div class="mric-row-2 mric-anim">
+              <!-- Callout cotisations patronales -->
+              <div class="mric-patrocallout">
+                <div class="mric-patroicon">!</div>
+                <div><strong>Et encore, hors cotisations patronales</strong>Votre employeur verse en plus <em id="mric-patro-amount">… €</em>/an de cotisations patronales (~42 % du brut) qui financent aussi la Sécu, mais ne transitent jamais par votre compte. C'est le <strong style="color:#fff">coin fiscal OCDE</strong>. Détails en FAQ.</div>
+              </div>
+
+              <!-- Comparaison Europe -->
+              <div class="mric-europe">
+                <div class="mric-europe-title">Et chez nos voisins ? (taux de prélèvements obligatoires)</div>
+                <div class="mric-europe-bars" id="mric-europe-bars"></div>
+                <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : ces taux nationaux incluent l'ensemble des prélèvements (IR, cotisations salariales <em>et patronales</em>, TVA, taxes locales…). Votre taux personnel ci-dessus exclut les cotisations patronales, d'où l'écart. Source : Eurostat / OCDE 2024.</p>
+              </div>
+            </div>
+
+            <!-- Donut + 3 phrases choc côte à côte sur desktop -->
+            <div class="mric-donut-shocks-row mric-anim">
+              <!-- Donut breakdown -->
+              <div class="mric-donut-section">
+                <div class="mric-donut-title">La répartition de vos prélèvements</div>
+                <div class="mric-donut-wrap">
+                  <svg class="mric-donut-svg" id="mric-donut" viewBox="0 0 200 200">
+                    <g id="mric-donut-segs"></g>
+                    <g class="mric-donut-center">
+                      <text x="100" y="92" class="mric-dc-num" id="mric-donut-total">…</text>
+                      <text x="100" y="110" class="mric-dc-lbl">par an</text>
+                    </g>
+                  </svg>
+                  <div class="mric-donut-legend" id="mric-donut-legend"></div>
+                </div>
+                <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : extrapolation proportionnelle à votre contribution sur la répartition du budget public 2026 (1 722 Md€). L'IR finance le budget général, les cotisations financent la Sécu. La fongibilité totale est une simplification pédagogique.</p>
+              </div>
+
+              <!-- 3 phrases choc -->
+              <div class="mric-shocks" id="mric-shocks"></div>
+            </div>
+
+            <!-- Tableau détaillé -->
+            <div class="mric-detail mric-anim">
+              <div class="mric-detail-title">Le détail, ligne par ligne</div>
+              <div class="mric-detail-sub">Quote-part proportionnelle de votre contribution sur les principaux postes de dépense publique</div>
+              <div class="mric-detail-list" id="mric-detail-list"></div>
+            </div>
+
+            <!-- Summary -->
+            <div class="qblock mric-anim" id="mric-summary"></div>
+
+            <!-- Share buttons -->
+            <div class="mric-share mric-anim" id="mric-share">
+              <div class="mric-share-lbl">Partager vos chiffres</div>
+              <button class="mric-share-btn mric-share-native" id="mric-share-native" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill:none"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Partager
+              </button>
+              <div class="mric-share-row" id="mric-share-row">
+                <button class="mric-share-btn mric-share-btn--copy" data-platform="copy" type="button" title="Copier le lien">
+                  <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                  Copier
+                  <span class="mric-share-toast" id="mric-toast">Copié !</span>
+                </button>
+                <button class="mric-share-btn" data-platform="twitter" type="button" title="Partager sur X / Twitter">
+                  <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </button>
+                <button class="mric-share-btn" data-platform="facebook" type="button" title="Partager sur Facebook">
+                  <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </button>
+                <button class="mric-share-btn" data-platform="whatsapp" type="button" title="Partager sur WhatsApp">
+                  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </button>
+                <button class="mric-share-btn" data-platform="linkedin" type="button" title="Partager sur LinkedIn">
+                  <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </button>
+                <button class="mric-share-btn" data-platform="telegram" type="button" title="Partager sur Telegram">
+                  <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                </button>
+                <button class="mric-share-btn" data-platform="email" type="button" title="Envoyer par email">
+                  <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Lead Magnet -->
+            <div class="mric-lm mric-anim">
+              <div class="mric-lm-head">
+                <div class="mric-lm-icon"><img src="https://moneyradar.org/wp-content/uploads/2026/03/Capture-decran-2026-03-06-a-11.01.24.png" alt="Masterclass investissement"></div>
+                <div class="mric-lm-title"><span>Cadeau :</span> votre masterclass investissement offerte</div>
+              </div>
+              <p class="mric-lm-desc">On vous offre <strong>45 min de formation avec un stratégiste macro</strong> pour comprendre les cycles économiques et apprendre à <strong>légalement</strong> réduire votre fiscalité. <strong style="color:var(--teal)">+ Le rapport Mégatendances 2026 en bonus.</strong></p>
+              <div class="mric-lm-row">
+                <script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
+                <iframe src="https://subscribe-forms.beehiiv.com/6b4ebcf6-43b1-46fd-86b1-aca466483c43" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="width:340px;height:47px;margin:0;border-radius:0;background-color:transparent;box-shadow:none;max-width:100%;"></iframe>
+              </div>
+              <p class="mric-lm-fine">100% gratuit · Vos données restent privées · Désabonnement en 1 clic</p>
+            </div>
+
+            <!-- Liens internes — guides -->
+            <div class="mric-guides mric-anim">
+              <div class="mric-guides-head"><img src="https://moneyradar.org/lp4/wp-content/themes/astra-child/assets/images/moneyradar-logo.webp" alt="MoneyRadar" class="mric-guides-logo"><div class="mric-guides-title">Nos guides pour payer moins d'impôts (légalement)</div></div>
+              <div class="mric-guides-grid">
+                <a href="https://moneyradar.org/bourse/pea/meilleur-pea/" class="mric-guide-link" target="_blank" rel="noopener">
+                  <svg class="mric-guide-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  <span class="mric-guide-txt"><strong>Meilleur PEA</strong><span>Exonération d'impôt après 5 ans</span></span>
+                  <svg class="mric-guide-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/assurance-vie/meilleure-assurance-vie/" class="mric-guide-link" target="_blank" rel="noopener">
+                  <svg class="mric-guide-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span class="mric-guide-txt"><strong>Meilleure assurance vie</strong><span>Abattement de 4 600 € après 8 ans</span></span>
+                  <svg class="mric-guide-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/dans-quoi-investir/" class="mric-guide-link" target="_blank" rel="noopener">
+                  <svg class="mric-guide-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  <span class="mric-guide-txt"><strong>Dans quoi investir</strong><span>Le guide complet 2026</span></span>
+                  <svg class="mric-guide-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/bourse/meilleur-broker/" class="mric-guide-link" target="_blank" rel="noopener">
+                  <svg class="mric-guide-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                  <span class="mric-guide-txt"><strong>Meilleur broker</strong><span>Comparatif des courtiers</span></span>
+                  <svg class="mric-guide-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Nos autres calculateurs -->
+            <div class="mric-othercalc mric-anim">
+              <div class="mric-othercalc-title">Nos autres calculateurs</div>
+              <div class="mric-othercalc-grid">
+                <a href="https://moneyradar.org/simulateur-riche-pour-age/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Riche pour votre âge ?</div>
+                    <div class="mric-othercalc-desc">Votre rang patrimonial en France</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/guides/interets-composes/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Intérêts Composés</div>
+                    <div class="mric-othercalc-desc">Simulez la croissance de votre épargne</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/simulateur-liberte-financiere/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Liberté Financière</div>
+                    <div class="mric-othercalc-desc">Quand pourrez-vous vivre de vos placements</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/simulateur-objectif-financier/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Objectif Financier</div>
+                    <div class="mric-othercalc-desc">Votre épargne mensuelle idéale</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/simulateur-inflation-vs-investissement/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Inflation vs Investissement</div>
+                    <div class="mric-othercalc-desc">Simulez l'érosion de votre épargne</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                <a href="https://moneyradar.org/simulateur-valeur-temps/" class="mric-othercalc-item">
+                  <div>
+                    <div class="mric-othercalc-name">Valeur du Temps</div>
+                    <div class="mric-othercalc-desc">Combien vaut vraiment 1 h de votre vie</div>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ÉDUCATIF : LES 3 PILIERS ===== -->
+  <section class="lt">
+    <div class="inn">
+      <h2 class="stitle">Les 3 piliers des prélèvements en France</h2>
+      <p class="btxt">En France, vous ne payez pas qu'un seul impôt. La majorité du prélèvement est <strong>invisible</strong>, directement retenu sur le brut ou inclus dans le prix des biens. Voici ce qui finance les 1 722 Md€ de dépenses publiques annuelles.</p>
+      <div class="srow">
+        <div class="scard"><div class="num">22 %</div><div class="lbl2"><strong>Cotisations sociales (salarié)</strong><br>Prélevées sur votre brut. Financent retraites, santé, chômage. Le poste le plus lourd, et le plus invisible.</div></div>
+        <div class="scard"><div class="num">7 %</div><div class="lbl2"><strong>Impôt sur le revenu</strong><br>Le seul visible (déclaration de mai). Représente moins de 25 % des prélèvements totaux.</div></div>
+        <div class="scard"><div class="num">8 %</div><div class="lbl2"><strong>TVA et taxes indirectes</strong><br>Cachées dans chaque achat. Pèsent davantage sur les bas revenus (12 % vs 5 % du revenu).</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== POURQUOI 45 % ===== -->
+  <section class="dk">
+    <div class="inn">
+      <h2 class="stitle">Pourquoi la France prélève 45 % du PIB</h2>
+      <p class="btxt">La France est <strong>championne d'Europe</strong> du taux de prélèvements obligatoires, avec environ <strong>45,3 % du PIB</strong> contre 38 % en Allemagne, 33 % au Royaume-Uni, 27 % aux États-Unis. Cette singularité s'explique par un choix de société : un système de protection sociale très large financé essentiellement par la collectivité.</p>
+      <div class="mric-formula">
+        <p><strong>1 722 Md€ de dépenses publiques en 2026, dont :</strong></p>
+        <ul>
+          <li><strong>Retraites</strong> : 415 Md€ (24 %), 1er rang OCDE, on consacre 14 % du PIB aux pensions</li>
+          <li><strong>Santé</strong> : 274 Md€ (16 %), assurance maladie, hôpital public</li>
+          <li><strong>Protection sociale</strong> : 215 Md€ (12 %), chômage, RSA, familles, logement</li>
+          <li><strong>Éducation</strong> : 155 Md€ (9 %), école, collège, lycée, université</li>
+          <li><strong>Collectivités</strong> : 142 Md€ (8 %), communes, départements, régions</li>
+        </ul>
+      </div>
+      <p class="btxt">À cela s'ajoute une <strong>charge de la dette de 70 Md€</strong>, soit l'équivalent de 16 € par jour et par Français, simplement pour payer les intérêts. Source : <a href="https://www.budget.gouv.fr/reperes/loi-finances/dossiers/plf_2026" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">LFI 2026 budget.gouv.fr</a>.</p>
+    </div>
+  </section>
+
+  <!-- ===== 3 LEVIERS ===== -->
+  <section class="lt">
+    <div class="inn">
+      <h2 class="stitle">Comment réduire légalement vos prélèvements</h2>
+      <p class="btxt">Vous ne pouvez pas échapper aux cotisations sociales (sauf à changer de statut), mais vous pouvez agir sur l'IR et optimiser vos placements. Trois leviers principaux à votre disposition.</p>
+      <div class="cgrid">
+        <div class="card">
+          <div class="cnum">1</div>
+          <div>
+            <h3>PEA <span style="color:var(--teal)">(plafond 150 000 €)</span></h3>
+            <p>Exonération d'impôt sur le revenu après 5 ans. Seuls les prélèvements sociaux (17,2 %) restent dus. Le meilleur outil pour investir en actions / ETF européens et monde.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cnum">2</div>
+          <div>
+            <h3>PER <span style="color:var(--teal)">(déduction immédiate)</span></h3>
+            <p>Versements déductibles du revenu imposable. À TMI 30 %, 1 000 € versés = 300 € d'IR économisés. Sortie en rente ou capital à la retraite.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="cnum">3</div>
+          <div>
+            <h3>Assurance vie <span style="color:var(--teal)">(après 8 ans)</span></h3>
+            <p>Abattement de 4 600 € (célib) ou 9 200 € (couple) sur les gains après 8 ans. Transmission optimisée hors succession jusqu'à 152 500 €/bénéficiaire.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMPARAISON EUROPE ===== -->
+  <section class="dk">
+    <div class="inn">
+      <h2 class="stitle">La France est-elle vraiment plus taxée que ses voisins ?</h2>
+      <p class="btxt">Oui, mais avec une nuance importante. En taux de prélèvements obligatoires, la France est numéro 1 de l'UE. Mais ces prélèvements financent un système de santé universel, des retraites publiques, des allocations chômage parmi les plus généreuses. Ce qui coûte aux Français en impôts, les Américains le payent en assurance privée.</p>
+      <div class="cgrid">
+        <div class="card"><div class="cnum" style="color:#00F5C0;opacity:1">45,3 %</div><div><h3>France</h3><p>Le plus haut taux de l'UE. Inclut cotisations sociales (qui financent 60 % du système).</p></div></div>
+        <div class="card"><div class="cnum" style="color:#00F5C0;opacity:1">38,0 %</div><div><h3>Allemagne</h3><p>Moins de cotisations sociales mais l'assurance santé est obligatoire et privée pour les hauts revenus.</p></div></div>
+        <div class="card"><div class="cnum" style="color:#00F5C0;opacity:1">27,0 %</div><div><h3>États-Unis</h3><p>Faible taux d'impôt mais santé, retraite, éducation supérieure largement à la charge des ménages.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="lt">
+    <div class="inn">
+      <h2 class="stitle">Questions fréquentes</h2>
+      <div class="flist">
+        <details>
+          <summary>C'est quoi exactement les "cotisations salariales" ?</summary>
+          <div class="fans">Les cotisations salariales sont la <strong>part de votre salaire brut prélevée pour la Sécurité sociale</strong>, directement déduite avant que vous ne touchiez votre net. Elles représentent environ <strong>22 % du brut</strong> pour un salarié non-cadre, ~23 % pour un cadre. Sur votre bulletin de paie, c'est la grosse ligne "Total des cotisations salariales". Détail typique : <strong>9,7 % de CSG/CRDS</strong> (financement Sécu), <strong>~7 % de retraite</strong> (régime de base + complémentaire Agirc-Arrco), assurance chômage, assurance maladie complémentaire, etc. <strong>À ne pas confondre avec les cotisations patronales</strong> (~42 % du brut) que votre employeur paie en plus de votre salaire et qui n'apparaissent nulle part sur votre fiche de paie.</div>
+        </details>
+        <details>
+          <summary>Et encore, ça ne compte pas les cotisations patronales ?</summary>
+          <div class="fans">Exactement. Le simulateur compte uniquement ce que <strong>vous payez personnellement</strong> et qui apparaît sur votre fiche de paie ou votre consommation. Mais votre employeur verse aussi <strong>~42 % de votre brut</strong> en cotisations patronales (assurance maladie, vieillesse, allocations familiales, chômage…). Pour un net de 2 500 €/mois, cela représente <strong>environ 16 000 €/an supplémentaires</strong>. Si on incluait cette part, votre "coût fiscal et social total" doublerait quasiment. C'est ce que l'OCDE appelle le <strong>"coin fiscal"</strong> et la France est championne d'Europe sur cet indicateur (47 % contre 35 % de moyenne OCDE). On les exclut ici parce que ce sont des sommes qui n'ont jamais transité par vos poches.</div>
+        </details>
+        <details>
+          <summary>Comment la TVA est-elle calculée ?</summary>
+          <div class="fans">La TVA varie selon ce que vous consommez : <strong>20 % sur la plupart des biens et services</strong>, 10 % sur la restauration, le transport et les travaux, 5,5 % sur l'alimentation et les livres, 2,1 % sur les médicaments remboursables. Impossible de simuler exactement votre TVA réelle, il faudrait connaître chacun de vos achats. On applique donc le <strong>taux moyen INSEE par décile de revenu disponible</strong> : <strong>12 % du revenu pour les 10 % les plus modestes, 5 % pour les 10 % les plus aisés</strong>. Pourquoi cette régressivité ? Parce que les bas revenus dépensent l'intégralité de ce qu'ils gagnent (donc TVA sur tout), alors que les hauts revenus en épargnent une partie. Pour un revenu intermédiaire (30-40 k€/an), on applique ~8-9 % du net annuel. Source : <a href="https://www.insee.fr/fr/statistiques/3713290" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">Insee Analyses n° 43</a>.</div>
+        </details>
+        <details>
+          <summary>D'où viennent les chiffres de répartition budgétaire ?</summary>
+          <div class="fans">De la <strong>Loi de Finances Initiale (LFI) 2026</strong> publiée au Journal Officiel du 19 février 2026, complétée par la <strong>Loi de financement de la Sécurité sociale</strong> (LFSS) et les budgets des collectivités. Total : 1 722 Md€ de dépenses publiques (État + Sécu + Collectivités). Le détail est disponible sur <a href="https://www.budget.gouv.fr/reperes/loi-finances/dossiers/plf_2026" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">budget.gouv.fr</a>.</div>
+        </details>
+        <details>
+          <summary>Pourquoi l'IR ne représente-t-il que 7 % de mes prélèvements ?</summary>
+          <div class="fans">C'est le grand malentendu français. L'IR est l'impôt <strong>le plus visible</strong> (déclaration de mai), mais c'est le moins lourd : il pèse environ 25 % du total des prélèvements obligatoires. Les cotisations sociales représentent à elles seules 55 %, et la TVA + taxes indirectes 20 %. Vous voyez surtout l'IR car c'est le seul que vous "payez" activement.</div>
+        </details>
+        <details>
+          <summary>Comment est calculé mon "Jour de Libération Fiscale" ?</summary>
+          <div class="fans">C'est la part de votre brut annuel qui part en prélèvements visibles (IR + cotisations salariales + TVA), exprimée en jours sur l'année. Si vous donnez 30 % de votre brut, vous travaillez 110 jours par an pour l'État, et le Tax Freedom Day tombe au 20 avril. Plus votre revenu est élevé, plus votre TMI grimpe et plus la date recule. Note : c'est une version simplifiée par rapport au Tax Freedom Day "officiel" qui inclut aussi les cotisations patronales (~mi-juillet pour la moyenne française).</div>
+        </details>
+        <details>
+          <summary>Quelles sont les dépenses qui ont le plus augmenté ?</summary>
+          <div class="fans">Sur les 10 dernières années, la <strong>charge de la dette publique</strong> a été le poste à plus forte croissance : passée de 35 Md€ à 70 Md€ (× 2 en 10 ans), elle dépassera bientôt le budget de la Défense. À l'inverse, l'aide publique au développement a baissé de 38 % entre 2024 et 2026 (de 5,8 à 3,6 Md€).</div>
+        </details>
+        <details>
+          <summary>Et les "niches fiscales" alors ?</summary>
+          <div class="fans">Les niches fiscales représentent <strong>98 Md€ en 2026</strong>. C'est l'équivalent de la totalité de l'IR collecté chaque année. Ce ne sont pas des dépenses au sens strict, mais des recettes auxquelles l'État renonce volontairement. Les plus coûteuses : CIR (crédit impôt recherche) 7 Md€, taux réduit de TVA dans la restauration 3 Md€, taxation forfaitaire des dividendes (PFU) 5 Md€, etc.</div>
+        </details>
+        <details>
+          <summary>Et si je suis en couple à 2 revenus ?</summary>
+          <div class="fans">Le calculateur prend un seul revenu et applique le quotient familial du foyer (2 parts pour un couple). Si vous êtes à <strong>deux actifs</strong>, saisissez la <strong>somme des deux nets imposables</strong> mensuels du foyer pour un résultat correct (sinon l'IR est sous-estimé car le quotient familial divise le revenu en 2 alors qu'un seul revenu est déclaré). Pour un calcul à l'euro près, utilisez le simulateur officiel <a href="https://simulateur-ir-ifi.impots.gouv.fr/calcul_impot/2026/complet/index.htm" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">impots.gouv.fr</a>.</div>
+        </details>
+        <details>
+          <summary>Le statut "Indépendant" est-il fiable ?</summary>
+          <div class="fans">Le ratio brut/net pour "Indépendant" suppose un <strong>TNS classique</strong> (régime SSI, ~30 % de cotisations sur le revenu professionnel). Pour les autres cas : <strong>micro-entreprise</strong> (~22 % du CA en BNC libéral, moins pour BIC vente), <strong>gérant SASU</strong> (régime "assimilé salarié", ~80 % de cotisations sur le salaire), <strong>profession libérale réglementée</strong> (cotisations spécifiques CARMF, CARPV…). Le calcul peut s'écarter de la réalité pour ces statuts spécifiques.</div>
+        </details>
+        <details>
+          <summary>Le calcul couvre-t-il vraiment TOUS mes prélèvements ?</summary>
+          <div class="fans">Non, par souci de simplicité. Le simulateur inclut <strong>les 3 prélèvements majeurs visibles</strong> (IR + cotisations salariales + TVA). Il n'inclut pas : la <strong>TICPE</strong> sur les carburants (~16 Md€/an au niveau national), les <strong>droits d'accise</strong> sur le tabac et l'alcool (~17 Md€), la <strong>taxe foncière</strong> si vous êtes propriétaire (~35 Md€), la <strong>taxe d'habitation</strong> sur les résidences secondaires, l'<strong>IFI</strong> au-delà de 1,3 M€ de patrimoine, et les <strong>prélèvements sociaux sur placements</strong> (17,2 % sur intérêts, dividendes, plus-values). Pour un Français médian, ces "petites" taxes ajoutent ~5-10 % au total visible calculé ici.</div>
+        </details>
+        <details>
+          <summary>Le simulateur est-il vraiment précis ?</summary>
+          <div class="fans">Précis à <strong>± 5 % près</strong> pour la grande majorité des situations. Le calcul d'IR utilise le barème exact 2026 et le quotient familial standard. Les cotisations sociales appliquent les taux URSSAF 2026. La TVA est une <strong>estimation moyenne par décile</strong>. Votre TVA réelle dépend de votre consommation. Pour un calcul à l'euro près, utilisez le simulateur officiel <a href="https://simulateur-ir-ifi.impots.gouv.fr/calcul_impot/2026/complet/index.htm" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:underline">impots.gouv.fr</a>.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function(){
+  'use strict';
+
+  var btnCalculer=document.getElementById('mric-btn-calculer');
+  var resultsSection=document.getElementById('mric-results');
+
+  // Bareme IR 2026 (revenus 2025) — source: LFI 2026, JO 19/02/2026
+  var TRANCHES=[
+    {seuil:11600,taux:0},
+    {seuil:29579,taux:0.11},
+    {seuil:84577,taux:0.30},
+    {seuil:181917,taux:0.41},
+    {seuil:Infinity,taux:0.45}
+  ];
+
+  // Budget public 2026 (LFI + LFSS + collectivités) — total 1 722 Md€
+  var BUDGET_TOTAL=1722;
+  var POSTES=[
+    {name:'Retraites',pct:24.1,color:'#00F5C0',md:415},
+    {name:'Santé',pct:15.9,color:'#1060C4',md:274},
+    {name:'Protection sociale',pct:12.5,color:'#A855F7',md:215},
+    {name:'Éducation',pct:9.0,color:'#FF9F43',md:155},
+    {name:'Collectivités locales',pct:8.2,color:'#FFD700',md:142},
+    {name:'Autres dépenses',pct:18.3,color:'#6B89BF',md:314},
+    {name:'Charge de la dette',pct:4.1,color:'#FF3B4E',md:70},
+    {name:'Défense',pct:3.3,color:'#8B5CF6',md:57},
+    {name:'Agriculture / Environnement',pct:2.5,color:'#10B981',md:43},
+    {name:'Justice + Sécurité',pct:2.1,color:'#F59E0B',md:37}
+  ];
+
+  var LIGNES_DETAIL=[
+    {name:'Pensions de retraite (régime général + fonctionnaires)',amount:415000,note:'1er poste budgétaire, 24 % du total',color:'#00F5C0'},
+    {name:'Assurance maladie + hôpital public',amount:274000,note:'Sécurité sociale, hors retraites',color:'#1060C4'},
+    {name:'Allocations chômage (Pôle Emploi / France Travail)',amount:40000,note:'Indemnisation, formation, accompagnement',color:'#A855F7'},
+    {name:'Aides au logement (APL, ALS, ALF)',amount:48000,note:'Versées par la CAF',color:'#A855F7'},
+    {name:'RSA + minima sociaux',amount:38000,note:'Solidarité, prime d\'activité incluse',color:'#A855F7'},
+    {name:'Enseignement scolaire',amount:64500,note:'Primaire, collège, lycée',color:'#FF9F43'},
+    {name:'Enseignement supérieur + recherche',amount:31000,note:'Universités, CNRS, CEA',color:'#FF9F43'},
+    {name:'Charge de la dette publique',amount:70000,note:'Intérêts de la dette, ~3 200 Md€ encours',color:'#FF3B4E'},
+    {name:'Défense',amount:57000,note:'Armées, dissuasion nucléaire, matériel',color:'#8B5CF6'},
+    {name:'Sécurité intérieure (Police + Gendarmerie)',amount:23000,note:'Mission sécurités LFI 2026',color:'#FFD700'},
+    {name:'Justice (tribunaux, prisons)',amount:14000,note:'Mission justice',color:'#FFD700'},
+    {name:'Audiovisuel public (France TV, Radio France, Arte, INA)',amount:3878,note:'Financé par fraction de TVA',color:'#6B89BF'},
+    {name:'Aide publique au développement',amount:3600,note:'-38 % depuis 2024',color:'#6B89BF'},
+    {name:'Assemblée nationale',amount:608,note:'Dotation gelée en 2026',color:'#6B89BF'},
+    {name:'Sénat',amount:354,note:'Dotation État (budget total 382 M€)',color:'#6B89BF'},
+    {name:'Présidence de la République (Élysée)',amount:122.6,note:'Gel pour la 2e année consécutive',color:'#6B89BF'}
+  ];
+
+  // Taux de prélèvements obligatoires en % du PIB — Eurostat 2024 / OCDE 2024
+  var EUROPE=[
+    {pays:'Danemark',taux:45.8},
+    {pays:'France',taux:45.3,you:true},
+    {pays:'Belgique',taux:45.1},
+    {pays:'Italie',taux:42.4},
+    {pays:'Suède',taux:42.0},
+    {pays:'Allemagne',taux:40.9},
+    {pays:'Espagne',taux:36.5},
+    {pays:'Royaume-Uni',taux:33.0},
+    {pays:'États-Unis',taux:25.6}
+  ];
+
+  function computeParts(situation, enfants){
+    var parts = (situation==='couple') ? 2 : 1;
+    var n = Math.max(0, Math.min(10, enfants|0));
+    if(n<=2){parts += 0.5*n;}else{parts += 1 + 1*(n-1);}
+    if(situation==='isole' && n>0){parts += 0.5;}
+    return parts;
+  }
+
+  function computeIR(revenuImposable, parts){
+    var rPart = revenuImposable / parts;
+    var ir = 0;
+    var prev = 0;
+    for(var i=0;i<TRANCHES.length;i++){
+      var s = TRANCHES[i].seuil;
+      var t = TRANCHES[i].taux;
+      if(rPart > prev){
+        var tranche = Math.min(rPart, s) - prev;
+        ir += tranche * t;
+      }
+      prev = s;
+      if(rPart <= s) break;
+    }
+    ir = ir * parts;
+    // Décote 2026 (revenus 2025) — Art. 197-I-4 CGI
+    // Célib : décote = max(0, 897 - 0,4525 × IR), éligible si IR < 1 982 €
+    // Couple : décote = max(0, 1 483 - 0,4525 × IR), éligible si IR < 3 277 €
+    var seuilEligibilite = (parts >= 2) ? 3277 : 1982;
+    var refDecote = (parts >= 2) ? 1483 : 897;
+    if(ir > 0 && ir < seuilEligibilite){
+      var decote = Math.max(0, refDecote - 0.4525 * ir);
+      ir = Math.max(0, ir - decote);
+    }
+    return Math.max(0, ir);
+  }
+
+  function computeTVAPct(netAnnuel){
+    if(netAnnuel <= 13820) return 12;
+    if(netAnnuel >= 65250) return 5;
+    var t = (netAnnuel - 13820) / (65250 - 13820);
+    return 12 - 7*t;
+  }
+
+  function brutFromNet(netMensuel, statut){
+    var ratios = {salarie:1.28, cadre:1.33, indep:1.45, retraite:1.10};
+    return netMensuel * (ratios[statut] || 1.28);
+  }
+
+  function cotisRatios(statut){
+    // Taux URSSAF 2026 (salarié / patronal % du brut)
+    if(statut==='cadre') return {sal:0.25, pat:0.45};  // Agirc-Arrco T2 incluse
+    if(statut==='indep') return {sal:0.30, pat:0};
+    if(statut==='retraite') return {sal:0.09, pat:0};
+    return {sal:0.22, pat:0.42};
+  }
+
+  function formatEuro(n){
+    return Math.round(n).toLocaleString('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+  function formatEuroPrecise(n){
+    if(n<1) return n.toFixed(2).replace('.',',')+' €';
+    if(n<100) return (Math.round(n*10)/10).toString().replace('.',',')+' €';
+    return Math.round(n).toLocaleString('fr-FR')+' €';
+  }
+  function formatCompact(n){
+    if(Math.abs(n)>=1e9){var v=Math.round(n/1e8)/10; return v.toString().replace('.',',').replace(/,0$/,'')+' Md€';}
+    if(Math.abs(n)>=1e6){var v2=Math.round(n/1e5)/10; return v2.toString().replace('.',',').replace(/,0$/,'')+' M€';}
+    if(Math.abs(n)>=1e3) return (n/1e3).toFixed(0)+' k€';
+    return Math.round(n)+' €';
+  }
+
+  function tfdDate(pctYear){
+    var date = new Date(2026, 0, 1);
+    date.setDate(date.getDate() + Math.round(365 * pctYear));
+    return date.toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+  }
+
+  function drawDonut(data, totalUserPay){
+    var svg = document.getElementById('mric-donut-segs');
+    svg.innerHTML = '';
+    var cx=100, cy=100, r=72, sw=22;
+    var circ = 2*Math.PI*r;
+    var offset = 0;
+    var sorted = data.slice().sort(function(a,b){return b.pct-a.pct});
+    sorted.forEach(function(seg){
+      var dash = (seg.pct/100)*circ;
+      var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',r);
+      c.setAttribute('fill','none');c.setAttribute('stroke',seg.color);
+      c.setAttribute('stroke-width',sw);
+      c.setAttribute('stroke-dasharray', dash+' '+(circ-dash));
+      c.setAttribute('stroke-dashoffset', -offset);
+      c.setAttribute('transform','rotate(-90 '+cx+' '+cy+')');
+      c.setAttribute('style','transition:stroke-dasharray .8s cubic-bezier(.34,1.56,.64,1)');
+      svg.appendChild(c);
+      offset += dash;
+    });
+    document.getElementById('mric-donut-total').textContent = formatCompact(totalUserPay);
+    var legend = document.getElementById('mric-donut-legend');
+    legend.innerHTML = '';
+    sorted.forEach(function(seg){
+      var euros = totalUserPay * seg.pct/100;
+      var div = document.createElement('div');
+      div.className = 'mric-donut-item';
+      div.innerHTML = '<span class="mric-donut-dot" style="background:'+seg.color+'"></span>'+
+        '<span class="mric-donut-name">'+seg.name+'</span>'+
+        '<span class="mric-donut-val">'+formatEuro(euros)+'</span>'+
+        '<span class="mric-donut-pct">'+seg.pct.toFixed(1).replace('.',',')+' %</span>';
+      legend.appendChild(div);
+    });
+  }
+
+  function calculer(){
+    var netMensuel = Math.max(0, parseFloat(document.getElementById('mric-net').value) || 0);
+    var statut = document.getElementById('mric-statut').value;
+    var situation = document.getElementById('mric-situation').value;
+    var enfants = Math.max(0, Math.min(10, parseInt(document.getElementById('mric-enfants').value,10) || 0));
+
+    var netAnnuel = netMensuel * 12;
+    var brutMensuel = brutFromNet(netMensuel, statut);
+    var brutAnnuel = brutMensuel * 12;
+    var ratios = cotisRatios(statut);
+    var cotisSal = brutAnnuel * ratios.sal;
+    var cotisPat = brutAnnuel * ratios.pat;
+
+    var abattPlafond = (statut==='retraite') ? 4321 : 14426;
+    var abatt = Math.min(netAnnuel * 0.1, abattPlafond);
+    var imposable = Math.max(0, netAnnuel - abatt);
+    var parts = computeParts(situation, enfants);
+    var ir = computeIR(imposable, parts);
+
+    var tvaPct = computeTVAPct(netAnnuel);
+    var tva = netAnnuel * tvaPct/100;
+
+    var total = ir + cotisSal + tva;
+    var tauxEffectif = (brutAnnuel>0) ? total / brutAnnuel * 100 : 0;
+
+    var pctYear = Math.min(1, brutAnnuel>0 ? total / brutAnnuel : 0);
+    var nbJours = Math.round(365 * pctYear);
+    var dateTFD = tfdDate(pctYear);
+
+    document.getElementById('mric-total-num').textContent = formatEuro(total);
+    document.getElementById('mric-total-sub').textContent = 'Voici ce que vous reversez à l\'État et à la Sécu cette année.';
+
+    var breakdownEl = document.getElementById('mric-breakdown');
+    breakdownEl.innerHTML =
+      '<div class="mric-breakdown-item"><div class="mric-breakdown-icon">IR</div>'+
+        '<div class="mric-breakdown-body"><strong>Impôt sur le revenu</strong>'+
+        '<span>Retenu directement sur votre fiche de paie (prélèvement à la source). Finance le budget général de l\'État.</span></div>'+
+        '<div class="mric-breakdown-amount">'+formatEuro(ir)+'</div></div>'+
+      '<div class="mric-breakdown-item"><div class="mric-breakdown-icon mric-bd-2">CS</div>'+
+        '<div class="mric-breakdown-body"><strong>Cotisations salariales</strong>'+
+        '<span>Les ~22 % du brut prélevés sur votre fiche de paie pour la Sécurité sociale : retraite, maladie, chômage, famille.</span></div>'+
+        '<div class="mric-breakdown-amount">'+formatEuro(cotisSal)+'</div></div>'+
+      '<div class="mric-breakdown-item"><div class="mric-breakdown-icon mric-bd-3">TVA</div>'+
+        '<div class="mric-breakdown-body"><strong>TVA estimée</strong>'+
+        '<span>'+tvaPct.toFixed(1).replace('.',',')+' % de votre net annuel, taux INSEE moyen pour votre niveau de revenu. Payée invisiblement sur chaque achat.</span></div>'+
+        '<div class="mric-breakdown-amount">'+formatEuro(tva)+'</div></div>';
+
+    document.getElementById('mric-patro-amount').textContent = formatEuro(cotisPat);
+
+    document.getElementById('mric-jour').textContent = formatEuro(total/365)+'/j';
+    var coutMensuel = total / 12;
+    document.getElementById('mric-mensuel').textContent = formatEuro(coutMensuel)+'/mois';
+    document.getElementById('mric-taux').textContent = tauxEffectif.toFixed(1).replace('.',',')+' %';
+
+    var heuresJour = (tauxEffectif/100) * 8;
+    var hEntiere = Math.floor(heuresJour);
+    var minutes = Math.round((heuresJour - hEntiere) * 60);
+    if(minutes===60){hEntiere++;minutes=0;}
+    var rangEl = document.getElementById('mric-rang');
+    rangEl.textContent = hEntiere + 'h' + (minutes<10?'0':'') + minutes;
+    rangEl.className = 'mric-stat-num mric-orange';
+
+    document.getElementById('mric-tfd-date').textContent = dateTFD;
+    document.getElementById('mric-tfd-desc').innerHTML =
+      'Sur votre brut annuel, <strong>'+nbJours+' jours</strong> partent en IR + cotisations + TVA. '+
+      'Du 1er janvier jusqu\'au <strong>'+dateTFD+'</strong>, c\'est pour l\'État. Le reste de l\'année, c\'est pour vous.';
+    document.getElementById('mric-tfd-bar').style.width = (pctYear*100).toFixed(1)+'%';
+
+    var retraites = total * 0.241;
+    var sante = total * 0.159;
+    var education = total * 0.090;
+    var dette = total * 0.041;
+    var defense = total * 0.033;
+    var elyseeShare = total * (122.6/1000) / BUDGET_TOTAL;
+    var assembleeShare = total * (607.65/1000) / BUDGET_TOTAL;
+    var ratioRetraitesEdu = retraites/education;
+
+    var postesConcrets = POSTES.filter(function(p){return p.name !== 'Autres dépenses'}).sort(function(a,b){return b.pct-a.pct});
+    var rangDette = postesConcrets.findIndex(function(p){return p.name==='Charge de la dette'}) + 1;
+    var ordinaux = ['1er','2e','3e','4e','5e','6e','7e','8e','9e','10e'];
+    var rangDetteTxt = ordinaux[rangDette-1] || (rangDette+'e');
+
+    var shocksEl = document.getElementById('mric-shocks');
+    shocksEl.innerHTML =
+      '<div class="mric-shock"><div class="mric-shock-lbl">Le saviez-vous</div>'+
+      '<div class="mric-shock-txt">Vous financez <strong>'+ratioRetraitesEdu.toFixed(1).replace('.',',')+' fois plus</strong> le système de retraite par répartition ('+formatEuro(retraites)+') que l\'éducation publique ('+formatEuro(education)+').</div></div>'+
+      '<div class="mric-shock"><div class="mric-shock-lbl">L\'addition cachée</div>'+
+      '<div class="mric-shock-txt">La <strong>charge de la dette</strong> ('+formatEuro(dette)+') est désormais votre '+rangDetteTxt+' plus gros poste, devant la Défense ('+formatEuro(defense)+').</div></div>'+
+      '<div class="mric-shock"><div class="mric-shock-lbl">Le détail amusant</div>'+
+      '<div class="mric-shock-txt">Sur '+formatEuro(total)+' versés, vous donnez <strong>'+formatEuroPrecise(elyseeShare)+'</strong> à l\'Élysée et <strong>'+formatEuroPrecise(assembleeShare)+'</strong> à l\'Assemblée nationale.</div></div>';
+
+    drawDonut(POSTES, total);
+
+    var detailEl = document.getElementById('mric-detail-list');
+    detailEl.innerHTML = '';
+    var maxLigne = LIGNES_DETAIL[0].amount; // pour le ratio des barres
+    LIGNES_DETAIL.forEach(function(l){
+      var partEur = total * (l.amount/1e3) / BUDGET_TOTAL;
+      var pct = Math.min(100, (l.amount / maxLigne) * 100);
+      var row = document.createElement('div');
+      row.className = 'mric-detail-row';
+      row.style.setProperty('--pct', pct.toFixed(2) + '%');
+      row.style.setProperty('--bar-color', l.color || '#6B89BF');
+      var isTiny = partEur < 50;
+      row.innerHTML =
+        '<div class="mric-detail-name">'+l.name+
+        '<small>'+l.note+', '+formatCompact(l.amount*1e6)+' au total</small></div>'+
+        '<div class="mric-detail-bar"><span></span></div>'+
+        '<div class="mric-detail-val '+(isTiny?'mric-tiny':'')+'">'+formatEuroPrecise(partEur)+'</div>';
+      detailEl.appendChild(row);
+    });
+
+    var maxE = 50;
+    var europeBars = document.getElementById('mric-europe-bars');
+    europeBars.innerHTML = '';
+    EUROPE.forEach(function(p){
+      var row = document.createElement('div');
+      row.className = 'mric-europe-row' + (p.you?' mric-you-row':'');
+      var pctBar = (p.taux/maxE)*100;
+      row.innerHTML =
+        '<span class="mric-europe-flag'+(p.you?' mric-you':'')+'">'+p.pays+'</span>'+
+        '<div class="mric-europe-bar"><div class="mric-europe-fill" style="width:'+pctBar.toFixed(1)+'%"></div></div>'+
+        '<span class="mric-europe-val">'+p.taux.toFixed(1).replace('.',',')+' %</span>';
+      europeBars.appendChild(row);
+    });
+
+    var summaryEl = document.getElementById('mric-summary');
+    summaryEl.innerHTML =
+      'La moitié de ce que vous reversez part dans la protection sociale (<strong>'+formatEuro(total*0.525)+'</strong> en retraites, santé, chômage). '+
+      '<strong>'+formatEuro(total*0.090)+'</strong> financent l\'éducation. <strong>'+formatEuro(total*0.041)+'</strong> servent à payer les intérêts de la dette publique. '+
+      'Si vous trouvez ce niveau de prélèvement élevé, il existe des leviers parfaitement légaux pour réduire votre IR : PEA (exonération après 5 ans), PER (déduction immédiate), assurance vie. '+
+      'Nos guides ci-dessous détaillent ces stratégies.';
+
+    resultsSection.classList.add('mric-visible');
+  }
+
+  // Share
+  var SHARE_URL = document.querySelector('.mric-calc').getAttribute('data-share-url') || window.location.href;
+  var SHARE_TITLE = "Où vont vraiment vos impôts ? MoneyRadar";
+  var SHARE_TEXT = "Je viens de découvrir où vont vraiment mes impôts. Le détail, ligne par ligne (jusqu'à l'Élysée).";
+
+  function copyLink(){
+    var toast = document.getElementById('mric-toast');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(SHARE_URL).then(function(){showToast(toast)}).catch(function(){fallbackCopy(toast)});
+    }else{fallbackCopy(toast)}
+  }
+  function fallbackCopy(toast){
+    var ta = document.createElement('textarea');ta.value=SHARE_URL;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');showToast(toast)}catch(e){}
+    document.body.removeChild(ta);
+  }
+  function showToast(toast){
+    toast.classList.add('mric-show');
+    setTimeout(function(){toast.classList.remove('mric-show')},2000);
+  }
+
+  function shareTo(platform){
+    var u = encodeURIComponent(SHARE_URL);
+    var t = encodeURIComponent(SHARE_TEXT+' '+SHARE_URL);
+    var urls = {
+      twitter:'https://twitter.com/intent/tweet?url='+u+'&text='+encodeURIComponent(SHARE_TEXT),
+      facebook:'https://www.facebook.com/sharer/sharer.php?u='+u,
+      whatsapp:'https://wa.me/?text='+t,
+      linkedin:'https://www.linkedin.com/sharing/share-offsite/?url='+u,
+      telegram:'https://t.me/share/url?url='+u+'&text='+encodeURIComponent(SHARE_TEXT),
+      email:'mailto:?subject='+encodeURIComponent(SHARE_TITLE)+'&body='+t
+    };
+    if(urls[platform]){
+      if(platform==='email'){window.location.href=urls[platform]}
+      else{window.open(urls[platform],'_blank','noopener,width=600,height=500')}
+    }
+  }
+
+  function nativeShare(){
+    if(navigator.share){
+      navigator.share({title:SHARE_TITLE,text:SHARE_TEXT,url:SHARE_URL}).catch(function(){});
+    }
+  }
+
+  var nativeBtn = document.getElementById('mric-share-native');
+  var shareRow = document.getElementById('mric-share-row');
+  if(navigator.share){
+    nativeBtn.classList.add('mric-has-api');
+    shareRow.classList.add('mric-has-native');
+  }
+  nativeBtn.addEventListener('click', nativeShare);
+  document.querySelectorAll('.mric-share-btn[data-platform]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var p = this.getAttribute('data-platform');
+      if(p==='copy'){copyLink()}else{shareTo(p)}
+    });
+  });
+
+  btnCalculer.addEventListener('click', calculer);
+  calculer();
+})();
+
+</script>
