@@ -351,6 +351,22 @@
 .v5 .mric-tfd-year { display: none; }
 .v5 .mric-tfd-legend { display: none; }
 
+/* CTA texte sous le TFD → scroll vers le gate */
+.v5 .mric-tfd-cta { text-align: center; margin-top: 18px; }
+.v5 .mric-tfd-cta a {
+  display: inline-block;
+  color: var(--teal);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  padding: 4px 0;
+  transition: opacity .15s;
+}
+.v5 .mric-tfd-cta a:hover { opacity: 0.78; text-decoration-thickness: 2px; }
+
 /* ========== SÉPARATEUR DE SECTION (typo en gros titre) ========== */
 .v5 .mric-sep {
   margin: 16px 0 0;
@@ -1134,6 +1150,193 @@
   .v5 .scard, .v5 .card { padding-left: 0 !important; padding-right: 0 !important; }
 }
 
+/* ===== GATE — Prénom + email + RGPD pour recevoir le rapport ===== */
+.v5 .mric-gate-zone { position: relative; isolation: isolate; }
+.v5 .mric-gated-content {
+  filter: blur(11px) saturate(0.55) brightness(0.85);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: filter .6s ease, opacity .6s ease;
+  /* Limit the height of the blurred preview so the page isn't massive */
+  max-height: 720px;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 95%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 95%);
+}
+.v5 .mric-gate-zone.mric-unlocked .mric-gated-content {
+  filter: none;
+  pointer-events: auto;
+  user-select: auto;
+  -webkit-user-select: auto;
+  max-height: none;
+  overflow: visible;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.v5 .mric-gate-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 40px 16px 0;
+  z-index: 5;
+  pointer-events: none; /* let the card handle pointer events */
+}
+.v5 .mric-gate-zone.mric-unlocked .mric-gate-overlay { display: none; }
+.v5 .mric-gate-card {
+  pointer-events: auto;
+  max-width: 520px; width: 100%;
+  background: linear-gradient(180deg, rgba(11,17,32,0.96) 0%, rgba(11,17,32,0.92) 100%);
+  border: 1px solid rgba(0,245,192,0.30);
+  border-radius: 18px;
+  padding: 32px 28px 26px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 60px rgba(0,245,192,0.10);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: relative;
+  text-align: center;
+  animation: mric-gate-in .45s cubic-bezier(.2,.7,.2,1) both;
+}
+@keyframes mric-gate-in {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.v5 .mric-gate-card::before {
+  content: "";
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--orange));
+  border-radius: 2px;
+}
+.v5 .mric-gate-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+}
+.v5 .mric-gate-card h3 {
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 800; letter-spacing: -0.025em; line-height: 1.18;
+  color: #EFF4FF;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.v5 .mric-gate-card h3 em {
+  font-style: normal;
+  color: var(--teal);
+}
+.v5 .mric-gate-card > p {
+  font-size: 14px; line-height: 1.55;
+  color: #B8C5DC;
+  margin: 0 0 22px;
+  text-wrap: pretty;
+}
+.v5 .mric-gate-card > p em { font-style: italic; color: #ECF0F8; }
+.v5 .mric-gate-form {
+  display: flex; flex-direction: column; gap: 10px;
+  text-align: left;
+}
+.v5 .mric-gate-form input[type="text"],
+.v5 .mric-gate-form input[type="email"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  color: #FFF;
+  font: inherit; font-size: 15px;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+}
+.v5 .mric-gate-form input::placeholder { color: rgba(184,197,220,0.5); }
+.v5 .mric-gate-form input:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: rgba(0,245,192,0.04);
+  box-shadow: 0 0 0 3px rgba(0,245,192,0.10);
+}
+.v5 .mric-gate-form input[aria-invalid="true"] {
+  border-color: var(--red);
+  background: rgba(255,59,78,0.05);
+}
+.v5 .mric-gate-consent {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 12px; line-height: 1.45;
+  color: #B8C5DC;
+  margin: 4px 0 6px;
+  cursor: pointer;
+}
+.v5 .mric-gate-consent input[type="checkbox"] {
+  flex: 0 0 16px;
+  width: 16px; height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+.v5 .mric-gate-consent.mric-invalid { color: var(--red); }
+.v5 .mric-gate-submit {
+  appearance: none; border: 0; cursor: pointer;
+  background: var(--teal); color: #0A0E18;
+  font: inherit; font-weight: 800; font-size: 15px; letter-spacing: 0.01em;
+  height: 52px;
+  border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 4px;
+  transition: filter .15s, transform .15s;
+}
+.v5 .mric-gate-submit:hover:not(:disabled) { filter: brightness(1.08); }
+.v5 .mric-gate-submit:active:not(:disabled) { transform: translateY(1px); }
+.v5 .mric-gate-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.v5 .mric-gate-submit svg { width: 16px; height: 16px; transition: transform .18s; }
+.v5 .mric-gate-submit:hover:not(:disabled) svg { transform: translateX(3px); }
+.v5 .mric-gate-status {
+  font-size: 12.5px;
+  margin: 4px 0 0;
+  min-height: 18px;
+  text-align: center;
+  color: var(--red);
+}
+.v5 .mric-gate-status.mric-status-loading { color: var(--teal); }
+.v5 .mric-gate-fine {
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: rgba(184,197,220,0.55);
+  margin: 18px 0 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Success banner shown after unlock */
+.v5 .mric-gate-success {
+  display: none;
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  border: 1px solid rgba(0,245,192,0.30);
+  background: linear-gradient(90deg, rgba(0,245,192,0.10), rgba(0,245,192,0.04));
+  border-radius: 12px;
+  color: #ECF0F8;
+  font-size: 14px;
+  line-height: 1.5;
+  align-items: flex-start;
+  gap: 12px;
+}
+.v5 .mric-gate-success.mric-show { display: flex; }
+.v5 .mric-gate-success-icon {
+  flex: 0 0 24px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #0A0E18;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px;
+}
+.v5 .mric-gate-success strong { color: var(--teal); }
+
+@container (max-width: 720px) {
+  .v5 .mric-gate-card { padding: 26px 20px 22px; }
+  .v5 .mric-gate-card h3 { font-size: 20px; }
+  .v5 .mric-gated-content { max-height: 560px; }
+}
+
 </style>
 
 <div class="mric-calc v5" data-share-url="https://moneyradar.org/simulateur-ou-vont-vos-impots/">
@@ -1248,63 +1451,108 @@
                   <span>31 décembre</span>
                 </div>
               </div>
+
+              <!-- CTA texte : scroll vers le gate -->
+              <div class="mric-tfd-cta" id="mric-tfd-cta">
+                <a href="#mric-gate-zone" id="mric-tfd-link">Recevoir le rapport détaillé →</a>
+              </div>
             </div>
 
-            <!-- Séparateur / titre "Le détail" -->
+            <!-- Séparateur / titre "Le détail" (VISIBLE — teaser gratuit) -->
             <div class="mric-sep mric-anim">
               <span>Le détail de vos prélèvements</span>
             </div>
 
-            <!-- 3 cartes IR / CS / TVA -->
+            <!-- 3 cartes IR / CS / TVA (VISIBLE — teaser gratuit) -->
             <div class="mric-breakdown mric-anim" id="mric-breakdown"></div>
 
-            <!-- Callout + Europe en 2 cols sur desktop -->
-            <div class="mric-row-2 mric-anim">
-              <!-- Callout cotisations patronales -->
-              <div class="mric-patrocallout">
-                <div class="mric-patroicon">!</div>
-                <div><strong>Et encore, hors cotisations patronales</strong>Votre employeur verse en plus <em id="mric-patro-amount">… €</em>/an de cotisations patronales (~42 % du brut) qui financent aussi la Sécu, mais ne transitent jamais par votre compte. C'est le <strong style="color:#fff">coin fiscal OCDE</strong>. Détails en FAQ.</div>
-              </div>
-
-              <!-- Comparaison Europe -->
-              <div class="mric-europe">
-                <div class="mric-europe-title">Et chez nos voisins ? (taux de prélèvements obligatoires)</div>
-                <div class="mric-europe-bars" id="mric-europe-bars"></div>
-                <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : ces taux nationaux incluent l'ensemble des prélèvements (IR, cotisations salariales <em>et patronales</em>, TVA, taxes locales…). Votre taux personnel ci-dessus exclut les cotisations patronales, d'où l'écart. Source : Eurostat / OCDE 2024.</p>
+            <!-- Success banner (shown after unlock) -->
+            <div class="mric-gate-success" id="mric-gate-success">
+              <div class="mric-gate-success-icon">✓</div>
+              <div>
+                Votre rapport arrive sur <strong><span id="mric-gate-success-email">votre boîte mail</span></strong> d'ici 1 à 2 minutes. Voici la suite de votre analyse.
               </div>
             </div>
 
-            <!-- Donut + 3 phrases choc côte à côte sur desktop -->
-            <div class="mric-donut-shocks-row mric-anim">
-              <!-- Donut breakdown -->
-              <div class="mric-donut-section">
-                <div class="mric-donut-title">La répartition de vos prélèvements</div>
-                <div class="mric-donut-wrap">
-                  <svg class="mric-donut-svg" id="mric-donut" viewBox="0 0 200 200">
-                    <g id="mric-donut-segs"></g>
-                    <g class="mric-donut-center">
-                      <text x="100" y="92" class="mric-dc-num" id="mric-donut-total">…</text>
-                      <text x="100" y="110" class="mric-dc-lbl">par an</text>
-                    </g>
-                  </svg>
-                  <div class="mric-donut-legend" id="mric-donut-legend"></div>
+            <!-- GATE ZONE : tout ce qui suit est flouté jusqu'à submit du formulaire -->
+            <div class="mric-gate-zone" id="mric-gate-zone">
+              <div class="mric-gated-content">
+
+                <!-- Callout + Europe en 2 cols sur desktop -->
+                <div class="mric-row-2 mric-anim">
+                  <!-- Callout cotisations patronales -->
+                  <div class="mric-patrocallout">
+                    <div class="mric-patroicon">!</div>
+                    <div><strong>Et encore, hors cotisations patronales</strong>Votre employeur verse en plus <em id="mric-patro-amount">… €</em>/an de cotisations patronales (~42 % du brut) qui financent aussi la Sécu, mais ne transitent jamais par votre compte. C'est le <strong style="color:#fff">coin fiscal OCDE</strong>. Détails en FAQ.</div>
+                  </div>
+
+                  <!-- Comparaison Europe -->
+                  <div class="mric-europe">
+                    <div class="mric-europe-title">Et chez nos voisins ? (taux de prélèvements obligatoires)</div>
+                    <div class="mric-europe-bars" id="mric-europe-bars"></div>
+                    <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : ces taux nationaux incluent l'ensemble des prélèvements (IR, cotisations salariales <em>et patronales</em>, TVA, taxes locales…). Votre taux personnel ci-dessus exclut les cotisations patronales, d'où l'écart. Source : Eurostat / OCDE 2024.</p>
+                  </div>
                 </div>
-                <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : extrapolation proportionnelle à votre contribution sur la répartition du budget public 2026 (1 722 Md€). L'IR finance le budget général, les cotisations financent la Sécu. La fongibilité totale est une simplification pédagogique.</p>
+
+                <!-- Donut + 3 phrases choc côte à côte sur desktop -->
+                <div class="mric-donut-shocks-row mric-anim">
+                  <!-- Donut breakdown -->
+                  <div class="mric-donut-section">
+                    <div class="mric-donut-title">La répartition de vos prélèvements</div>
+                    <div class="mric-donut-wrap">
+                      <svg class="mric-donut-svg" id="mric-donut" viewBox="0 0 200 200">
+                        <g id="mric-donut-segs"></g>
+                        <g class="mric-donut-center">
+                          <text x="100" y="92" class="mric-dc-num" id="mric-donut-total">…</text>
+                          <text x="100" y="110" class="mric-dc-lbl">par an</text>
+                        </g>
+                      </svg>
+                      <div class="mric-donut-legend" id="mric-donut-legend"></div>
+                    </div>
+                    <p style="font-size:11px;color:rgba(197,213,232,0.55);margin:12px 0 0;line-height:1.5">Note : extrapolation proportionnelle à votre contribution sur la répartition du budget public 2026 (1 722 Md€). L'IR finance le budget général, les cotisations financent la Sécu. La fongibilité totale est une simplification pédagogique.</p>
+                  </div>
+
+                  <!-- 3 phrases choc -->
+                  <div class="mric-shocks" id="mric-shocks"></div>
+                </div>
+
+                <!-- Tableau détaillé -->
+                <div class="mric-detail mric-anim">
+                  <div class="mric-detail-title">Le détail, ligne par ligne</div>
+                  <div class="mric-detail-sub">Quote-part proportionnelle de votre contribution sur les principaux postes de dépense publique</div>
+                  <div class="mric-detail-list" id="mric-detail-list"></div>
+                </div>
+
+                <!-- Summary -->
+                <div class="qblock mric-anim" id="mric-summary"></div>
+
               </div>
 
-              <!-- 3 phrases choc -->
-              <div class="mric-shocks" id="mric-shocks"></div>
-            </div>
+              <!-- Overlay avec formulaire -->
+              <div class="mric-gate-overlay">
+                <div class="mric-gate-card">
+                  <span class="mric-gate-eyebrow">Rapport personnalisé</span>
+                  <h3>Recevez votre analyse fiscale complète par email</h3>
+                  <p>Ventilation détaillée des 16 postes financés par vos prélèvements, comparaison aux Français de votre profil, 9 pays européens en regard, et 3 leviers fiscaux adaptés à votre situation.</p>
 
-            <!-- Tableau détaillé -->
-            <div class="mric-detail mric-anim">
-              <div class="mric-detail-title">Le détail, ligne par ligne</div>
-              <div class="mric-detail-sub">Quote-part proportionnelle de votre contribution sur les principaux postes de dépense publique</div>
-              <div class="mric-detail-list" id="mric-detail-list"></div>
-            </div>
+                  <form class="mric-gate-form" id="mric-gate-form" novalidate>
+                    <input type="text" id="mric-gate-prenom" placeholder="Votre prénom" autocomplete="given-name" required>
+                    <input type="email" id="mric-gate-email" placeholder="votre@email.fr" autocomplete="email" required>
+                    <label class="mric-gate-consent" id="mric-gate-consent-label">
+                      <input type="checkbox" id="mric-gate-rgpd" required>
+                      <span>J'accepte de recevoir mon rapport et la newsletter MoneyRadar. Désabonnement en 1 clic. Données privées, jamais partagées.</span>
+                    </label>
+                    <button type="submit" class="mric-gate-submit" id="mric-gate-submit">
+                      <span id="mric-gate-submit-label">Recevoir mon rapport</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                    <p class="mric-gate-status" id="mric-gate-status"></p>
+                  </form>
 
-            <!-- Summary -->
-            <div class="qblock mric-anim" id="mric-summary"></div>
+                  <p class="mric-gate-fine">Gratuit · Aucune publicité · Sans engagement</p>
+                </div>
+              </div>
+            </div>
 
             <!-- Share buttons -->
             <div class="mric-share mric-anim" id="mric-share">
@@ -1338,20 +1586,6 @@
                   <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                 </button>
               </div>
-            </div>
-
-            <!-- Lead Magnet -->
-            <div class="mric-lm mric-anim">
-              <div class="mric-lm-head">
-                <div class="mric-lm-icon"><img src="https://moneyradar.org/wp-content/uploads/2026/03/Capture-decran-2026-03-06-a-11.01.24.png" alt="Masterclass investissement"></div>
-                <div class="mric-lm-title"><span>Cadeau :</span> votre masterclass investissement offerte</div>
-              </div>
-              <p class="mric-lm-desc">On vous offre <strong>45 min de formation avec un stratégiste macro</strong> pour comprendre les cycles économiques et apprendre à <strong>légalement</strong> réduire votre fiscalité. <strong style="color:var(--teal)">+ Le rapport Mégatendances 2026 en bonus.</strong></p>
-              <div class="mric-lm-row">
-                <script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
-                <iframe src="https://subscribe-forms.beehiiv.com/6b4ebcf6-43b1-46fd-86b1-aca466483c43" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="width:340px;height:47px;margin:0;border-radius:0;background-color:transparent;box-shadow:none;max-width:100%;"></iframe>
-              </div>
-              <p class="mric-lm-fine">100% gratuit · Vos données restent privées · Désabonnement en 1 clic</p>
             </div>
 
             <!-- Liens internes — guides -->
@@ -1843,8 +2077,10 @@
     var detailEl = document.getElementById('mric-detail-list');
     detailEl.innerHTML = '';
     var maxLigne = LIGNES_DETAIL[0].amount; // pour le ratio des barres
+    var lignesDetailData = []; // capturé pour le rapport IA
     LIGNES_DETAIL.forEach(function(l){
       var partEur = total * (l.amount/1e3) / BUDGET_TOTAL;
+      lignesDetailData.push({ name: l.name, note: l.note, partEur: partEur, budgetTotalMd: l.amount/1e3 });
       var pct = Math.min(100, (l.amount / maxLigne) * 100);
       var row = document.createElement('div');
       row.className = 'mric-detail-row';
@@ -1881,6 +2117,50 @@
       'Nos guides ci-dessous détaillent ces stratégies.';
 
     resultsSection.classList.add('mric-visible');
+
+    // Expose latest computed data for the gate handler (sent to the Worker on submit)
+    window.__mricImpotsData = {
+      inputs: {
+        netMensuel: netMensuel,
+        netAnnuel: netAnnuel,
+        brutMensuel: brutMensuel,
+        brutAnnuel: brutAnnuel,
+        statut: statut,
+        situation: situation,
+        enfants: enfants,
+        parts: parts
+      },
+      results: {
+        total: total,
+        ir: ir,
+        cotisSal: cotisSal,
+        cotisPat: cotisPat,
+        tva: tva,
+        tvaPct: tvaPct,
+        tauxEffectif: tauxEffectif,
+        nbJours: nbJours,
+        dateTFD: dateTFD,
+        coutMensuel: coutMensuel,
+        coutJournalier: total / 365,
+        repartition: {
+          retraites: retraites,
+          sante: sante,
+          education: education,
+          dette: dette,
+          defense: defense,
+          elyseeShare: elyseeShare,
+          assembleeShare: assembleeShare
+        },
+        ratioRetraitesEdu: ratioRetraitesEdu,
+        rangDette: rangDette,
+        lignesDetail: lignesDetailData
+      },
+      meta: {
+        calculator: 'ou-vont-vos-impots',
+        version: 'v1',
+        timestamp: new Date().toISOString()
+      }
+    };
   }
 
   // Share
@@ -1944,6 +2224,130 @@
 
   btnCalculer.addEventListener('click', calculer);
   calculer();
+})();
+
+/* ===== GATE — Submit handler (envoie le payload au Worker) ===== */
+(function(){
+  'use strict';
+
+  // Endpoint du Cloudflare Worker (déployé sur le compte dédié MoneyRadar)
+  // Override possible en dev local : window.MRIC_WORKER_ENDPOINT = 'http://localhost:8787'
+  var DEFAULT_ENDPOINT = 'https://mric-rapport-impots.lingering-frost-26a0.workers.dev';
+  var ENDPOINT = window.MRIC_WORKER_ENDPOINT || DEFAULT_ENDPOINT;
+
+  var form = document.getElementById('mric-gate-form');
+  var zone = document.getElementById('mric-gate-zone');
+  var success = document.getElementById('mric-gate-success');
+  var successEmail = document.getElementById('mric-gate-success-email');
+  var prenomEl = document.getElementById('mric-gate-prenom');
+  var emailEl = document.getElementById('mric-gate-email');
+  var rgpdEl = document.getElementById('mric-gate-rgpd');
+  var consentLabel = document.getElementById('mric-gate-consent-label');
+  var btn = document.getElementById('mric-gate-submit');
+  var btnLabel = document.getElementById('mric-gate-submit-label');
+  var status = document.getElementById('mric-gate-status');
+
+  if(!form) return;
+
+  function isValidEmail(s){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(s||'').trim());
+  }
+
+  function setError(msg){
+    status.textContent = msg || '';
+    status.classList.remove('mric-status-loading');
+  }
+  function setLoading(msg){
+    status.textContent = msg || '';
+    status.classList.add('mric-status-loading');
+  }
+
+  function unlock(email){
+    zone.classList.add('mric-unlocked');
+    successEmail.textContent = email;
+    success.classList.add('mric-show');
+    // Masque le lien "Recevoir le rapport détaillé" devenu inutile
+    var cta = document.getElementById('mric-tfd-cta');
+    if (cta) cta.style.display = 'none';
+    // Smooth scroll so the user sees the unlocked content
+    setTimeout(function(){
+      success.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 200);
+  }
+
+  // CTA texte sous le TFD : scroll fluide vers le gate
+  var tfdLink = document.getElementById('mric-tfd-link');
+  if (tfdLink) {
+    tfdLink.addEventListener('click', function(ev){
+      ev.preventDefault();
+      var z = document.getElementById('mric-gate-zone');
+      if (z) z.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+
+    var prenom = (prenomEl.value || '').trim();
+    var email = (emailEl.value || '').trim();
+    var consent = !!rgpdEl.checked;
+
+    // Validation
+    prenomEl.removeAttribute('aria-invalid');
+    emailEl.removeAttribute('aria-invalid');
+    consentLabel.classList.remove('mric-invalid');
+
+    if(prenom.length < 2){
+      prenomEl.setAttribute('aria-invalid','true');
+      prenomEl.focus();
+      setError('Votre prénom est requis.');
+      return;
+    }
+    if(!isValidEmail(email)){
+      emailEl.setAttribute('aria-invalid','true');
+      emailEl.focus();
+      setError('Email invalide.');
+      return;
+    }
+    if(!consent){
+      consentLabel.classList.add('mric-invalid');
+      setError('Vous devez accepter pour recevoir le rapport.');
+      return;
+    }
+
+    var data = window.__mricImpotsData || {};
+    var payload = {
+      prenom: prenom,
+      email: email,
+      consent: true,
+      consentTimestamp: new Date().toISOString(),
+      calculator: 'ou-vont-vos-impots',
+      inputs: data.inputs || {},
+      results: data.results || {},
+      meta: data.meta || {}
+    };
+
+    // Option A — déverrouillage OPTIMISTE : on débloque la page tout de suite.
+    // Le Worker (Beehiiv + Claude + Resend, ~80 s) tourne en arrière-plan pendant
+    // que l'utilisateur lit son analyse ; le navigateur garde la connexion ouverte.
+    btn.disabled = true;
+    unlock(email);
+
+    // Envoi en arrière-plan (fire-and-forget). keepalive : tente de survivre à une
+    // navigation. On ne bloque PAS le déverrouillage sur cette réponse.
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    })
+    .then(function(res){
+      if(!res.ok) console.warn('[MRIC gate] Worker HTTP ' + res.status);
+    })
+    .catch(function(err){
+      console.warn('[MRIC gate] Worker error (rapport en arrière-plan):', err);
+    });
+  });
 })();
 
 </script>
